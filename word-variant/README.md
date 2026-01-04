@@ -1,6 +1,6 @@
 # Scatterplot Printer — Word variant (Windows setup & usage)
 
-This README explains how to run and distribute the `word_printer.py` prototype and how to build a one-file EXE (`word_printer.exe`) for Windows users who do not have admin rights.
+This README explains how to run and distribute the `word_printer.py` prototype and how to build a one-file EXE (`scatterplot_printer.exe`) for Windows users who do not have admin rights.
 
 Where files belong
 - Place `config.json` and `file-list.json` either next to the EXE/script or in `%APPDATA%\ScatterplotPrinter`.
@@ -24,8 +24,8 @@ See `BUILD.md` for the full step-by-step. In short:
 
 ```powershell
 pip install pyinstaller
-pyinstaller --onefile --noconsole --add-data "config.json;." --add-data "file-list.json;." word_printer.py
-.\dist\word_printer.exe
+pyinstaller --onefile --noconsole --name scatterplot_printer --add-data "config.json;." --add-data "file-list.json;." word_printer.py
+.\dist\scatterplot_printer.exe
 ```
 
 Safety: test mode
@@ -34,7 +34,7 @@ Safety: test mode
 
 Where to put files for a user
 
-- Preferred: send a ZIP containing `word_printer.exe`, `config.json`, `file-list.json`, and `run_exe.bat`. The user extracts and double-clicks `run_exe.bat`.
+- Preferred: send a ZIP containing `scatterplot_printer.exe`, `config.json`, `file-list.json`, and `run_exe.bat`. The user extracts and double-clicks `run_exe.bat`.
 - Alternative: put `config.json` into `%APPDATA%\ScatterplotPrinter` — the EXE will discover it there.
 
 Troubleshooting

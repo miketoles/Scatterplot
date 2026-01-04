@@ -1,6 +1,6 @@
 Files to include when packaging/distributing (place next to the EXE):
 
-- word_printer.exe  (built via PyInstaller --onefile) OR word_printer.py + venv
+- scatterplot_printer.exe  (built via PyInstaller --onefile) OR word_printer.py + venv
 - config.json
 - file-list.json
 - README.md

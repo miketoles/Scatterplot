@@ -4,7 +4,7 @@ windows_build.ps1
 Usage: run this from the `word-variant` folder on a fresh Windows machine (PowerShell)
 
 This script attempts a no-admin install of Python 3.12.x (per-user), creates a venv,
-installs dependencies, runs pywin32 post-install, and builds `word_printer.exe` with PyInstaller.
+installs dependencies, runs pywin32 post-install, and builds `scatterplot_printer.exe` with PyInstaller.
 
 Notes:
 - It prefers the official python.org installer with InstallAllUsers=0 so admin is not required.
@@ -108,13 +108,15 @@ try {
 }
 
 # 3) Build EXE
-Write-Log "Building word_printer.exe with PyInstaller"
+# Build with desired name
+Write-Log "Building scatterplot_printer.exe with PyInstaller"
 # ensure logs folder exists
 New-Item -ItemType Directory -Force -Path (Join-Path $scriptDir 'logs') | Out-Null
 
-$specArgs = @(
+ $specArgs = @(
     '--onefile',
     '--noconsole',
+    '--name', 'scatterplot_printer',
     '--add-data', 'config.json;.',
     '--add-data', 'file-list.json;.',
     '--add-data', 'logs;logs'
@@ -129,11 +131,11 @@ try {
     exit 1
 }
 
-if (Test-Path (Join-Path $scriptDir 'dist\word_printer.exe')) {
-    Write-Log "Build succeeded: dist\word_printer.exe"
-    Write-Log "You can copy dist\word_printer.exe plus config.json and file-list.json to target machines." 
+if (Test-Path (Join-Path $scriptDir 'dist\scatterplot_printer.exe')) {
+    Write-Log "Build succeeded: dist\scatterplot_printer.exe"
+    Write-Log "You can copy dist\scatterplot_printer.exe plus config.json and file-list.json to target machines." 
 } else {
-    Write-Log "Build completed but dist\word_printer.exe not found — check PyInstaller output above."
+    Write-Log "Build completed but dist\scatterplot_printer.exe not found — check PyInstaller output above."
 }
 
 Write-Log "Done. See build.log for details."

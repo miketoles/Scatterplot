@@ -2,12 +2,12 @@
 REM Helper to run the EXE or fallback to the Python script
 setlocal
 set MYDIR=%~dp0
-if exist "%MYDIR%dist\word_printer.exe" (
+) if exist "%MYDIR%dist\scatterplot_printer.exe" (
   echo Running bundled EXE...
-  "%MYDIR%dist\word_printer.exe"
-) else if exist "%MYDIR%word_printer.exe" (
+  "%MYDIR%dist\scatterplot_printer.exe"
+) else if exist "%MYDIR%scatterplot_printer.exe" (
   echo Running EXE in current folder...
-  "%MYDIR%word_printer.exe"
+  "%MYDIR%scatterplot_printer.exe"
 ) else (
   echo Bundled EXE not found; attempting to run Python script
   if exist "%MYDIR%venv\Scripts\activate.bat" (

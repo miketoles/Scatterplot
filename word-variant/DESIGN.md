@@ -74,7 +74,7 @@ Recommended Implementation (Python / pywin32):
    pyinstaller --onefile --noconsole word_printer.py
    ```
 
-   - Distribute the generated `dist\word_printer.exe` along with `config.json` or instruct users to create it via the HTML UI export.
+   - Distribute the generated `dist\scatterplot_printer.exe` along with `config.json` or instruct users to create it via the HTML UI export.
 
 ## Completed work (so far)
 

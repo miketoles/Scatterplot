@@ -40,13 +40,13 @@ python word_printer.py
 
 ```powershell
 pip install pyinstaller
-pyinstaller --onefile --noconsole --add-data "config.json;." --add-data "file-list.json;." word_printer.py
-# result: dist\word_printer.exe
+pyinstaller --onefile --noconsole --name scatterplot_printer --add-data "config.json;." --add-data "file-list.json;." word_printer.py
+# result: dist\scatterplot_printer.exe
 ```
 
 6) Run the EXE
 
-- Place `config.json` and `file-list.json` next to `word_printer.exe` or in `%APPDATA%\ScatterplotPrinter`.
+- Place `config.json` and `file-list.json` next to `scatterplot_printer.exe` or in `%APPDATA%\ScatterplotPrinter`.
 - Use `run_exe.bat` to launch.
 
 7) Test duplex printing

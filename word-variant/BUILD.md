@@ -1,4 +1,4 @@
-# Building `word_printer.exe` (no-admin, reproducible)
+# Building `scatterplot_printer.exe` (no-admin, reproducible)
 
 These steps are for building the one-file Windows EXE from `word_printer.py` on a Windows machine. None of the steps require administrator privileges if you install Python per-user (Microsoft Store or user installer) and use a virtual environment.
 
@@ -32,10 +32,11 @@ pip install pyinstaller
 Run PyInstaller from the `word-variant` folder. Include `config.json` and `file-list.json` as data files so the EXE can pick them up when colocated.
 
 ```powershell
-pyinstaller --onefile --noconsole --add-data "config.json;." --add-data "file-list.json;." word_printer.py
+# produce `scatterplot_printer.exe` from the same source
+pyinstaller --onefile --noconsole --name scatterplot_printer --add-data "config.json;." --add-data "file-list.json;." word_printer.py
 ```
 
-- Output will be in `dist\word_printer.exe`.
+- Output will be in `dist\scatterplot_printer.exe`.
 - If your config or file-list are stored in `%APPDATA%\ScatterplotPrinter`, you don't need to bundle them, but bundling simplifies distribution.
 
 5) Quick runtime checks (on the Windows machine)
@@ -43,7 +44,7 @@ pyinstaller --onefile --noconsole --add-data "config.json;." --add-data "file-li
 - Test without printing by enabling `test_mode` in `config.json` (true), then run:
 
 ```powershell
-.\dist\word_printer.exe
+.\dist\scatterplot_printer.exe
 ```
 
 - If you prefer to run the script directly (no EXE), use:
@@ -56,7 +57,7 @@ python word_printer.py
 6) Distribution notes (for giving to other users)
 
 - The simplest distributable is a ZIP containing:
-  - `word_printer.exe` (from `dist`)
+  - `scatterplot_printer.exe` (from `dist`)
   - `config.json` (example edited for the recipient)
   - `file-list.json` (or instruct them to populate via Explorer)
   - `README.md` and `run_exe.bat` (optional)
