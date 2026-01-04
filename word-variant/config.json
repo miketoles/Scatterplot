@@ -1,0 +1,34 @@
+{
+  "printer_name": "",
+  "copies": 1,
+  "collate": true,
+  "pages": "all",
+  "page_range": "",
+  "duplex": {
+    "enabled": true,
+    "mode": "long-edge"
+  },
+  "orientation": "portrait",
+  "margins_in_inches": { "top": 1, "bottom": 1, "left": 1, "right": 1 },
+  "pages_per_sheet": 1,
+  "test_mode": true,
+  "file_list": "file-list.json",
+  "save_last_used": true,
+  "formatted_date": "2026-01-04"
+}
+{
+  "printer_name": "\\\\PRINTSERVER\\My_Network_Printer",
+  "copies": 1,
+  "collate": true,
+  "pages": "all",
+  "page_range": "",
+  "duplex": { "enabled": true, "mode": "long-edge" },
+  "orientation": "landscape",
+  "paper": "Letter",
+  "margins_in_inches": { "top": 0.5, "bottom": 0.5, "left": 0.5, "right": 0.5 },
+  "pages_per_sheet": 1,
+  "testMode": true,
+  "file_list": "file-list.json",
+  "default_date": "",
+  "save_last_used": true
+}

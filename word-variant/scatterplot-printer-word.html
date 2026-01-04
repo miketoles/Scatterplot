@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scatterplot Printer — Word</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #1a1a1a;
+      --surface: #2a2a2a;
+      --border: #3a3a3a;
+      --text: #ffffff;
+      --text-dim: #888888;
+      --orange: #ff8c42;
+      --blue: #4a90a4;
+      --blue-dim: #3a7080;
+      --danger: #e74c3c;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: var(--surface);
+      padding: 16px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .header-subtitle {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+
+    .checkbox-container input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .checkbox-container label {
+      font-weight: 500;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .btn-blue {
+      background: var(--blue);
+      color: white;
+    }
+
+    .btn-blue:hover {
+      background: var(--blue-dim);
+    }
+
+    .btn-blue:disabled {
+      background: #3a3a3a;
+      color: var(--text-dim);
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #3a3a3a;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: #444444;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+
+    .file-list {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      min-height: 200px;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      background: var(--bg);
+    }
+
+    .file-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .file-list::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    .file-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    .file-item {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.1s;
+    }
+
+    .file-item:last-child {
+      border-bottom: none;
+    }
+
+    .file-item:hover {
+      background: var(--surface);
+    }
+
+    .file-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-name {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .file-path {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: 'Monaco', 'Courier New', monospace;
+      word-break: break-all;
+      margin-bottom: 3px;
+    }
+
+    .file-size {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .file-remove {
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px 8px;
+      border-radius: 3px;
+      transition: background 0.1s;
+      margin-left: 8px;
+    }
+
+    .file-remove:hover {
+      background: rgba(231, 76, 60, 0.2);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--text-dim);
+    }
+
+    .empty-icon {
+      font-size: 40px;
+      margin-bottom: 8px;
+      opacity: 0.4;
+    }
+
+    .count-badge {
+      background: var(--orange);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--text);
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--blue);
+    }
+
+    .date-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .date-input {
+      flex: 1;
+    }
+
+    .alert {
+      padding: 10px 12px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      background: rgba(255, 140, 66, 0.1);
+      border: 1px solid rgba(255, 140, 66, 0.3);
+      color: var(--text-dim);
+    }
+
+    .alert strong {
+      color: var(--orange);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-title">🖨️ Scatterplot Printer — Word</div>
+      <div class="header-subtitle">Select files, set date, generate instructions for Word documents</div>
+    </div>
+
+    <div class="section">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="checkbox-container" style="justify-content:space-between;align-items:center;">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="checkbox" id="testMode" checked onchange="app.saveSettings()">
+            <label for="testMode">🧪 Test Mode (Don't save files)</label>
+          </div>
+          <div style="font-size:12px;color:var(--text-dim);">Saved settings: <span id="settingsSavedIndicator">—</span></div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <label style="font-size:13px;color:var(--text-dim);min-width:110px;">Default Printer</label>
+          <input id="printerName" class="input" placeholder="Enter exact printer name as shown in Windows" style="flex:1;max-width:560px;">
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="checkbox" id="duplex" onchange="app.saveSettings()">
+          <label for="duplex">Two-sided (duplex) printing</label>
+        </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="checkbox" id="autoExport" onchange="app.saveSettings()">
+            <label for="autoExport">Auto-download file-list.json on changes</label>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn btn-secondary btn-small" onclick="app.chooseSaveLocation()">Choose file-list location</button>
+            <div style="font-size:12px;color:var(--text-dim);">Location: <span id="fileHandleName">(none)</span></div>
+          </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        📁 Files to Print
+        <span class="count-badge" id="fileCount">0</span>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button class="btn btn-blue" onclick="app.selectFiles()" style="flex:1;">
+          ➕ Add Scatterplot Files
+        </button>
+        <button class="btn btn-secondary" onclick="app.exportList()" title="Export saved list">⬇️</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('importInput').click()" title="Import list">⬆️</button>
+        <input type="file" id="importInput" style="display:none" accept="application/json" onchange="app.importList(event)">
+      </div>
+      <input type="file" id="fileInput" style="display:none" multiple accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+
+      <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 12px;">
+        Note: Browser cannot access full network paths. Use Windows app for full path support.
+      </div>
+
+      <div class="file-list" id="fileList">
+        <div class="empty-state">
+          <div class="empty-icon">📄</div>
+          <div style="font-size: 14px; font-weight: 500;">No files selected</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🖨️ Print</div>
+
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
+          <label style="min-width:110px;color:var(--text-dim);font-size:13px;">Copies</label>
+          <input id="copies" type="number" min="1" value="1" class="input" style="width:120px;">
+          <label style="min-width:70px;color:var(--text-dim);font-size:13px;margin-left:8px;">Collate</label>
+          <input id="collate" type="checkbox">
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
+          <label style="min-width:110px;color:var(--text-dim);font-size:13px;">Pages</label>
+          <label style="color:var(--text-dim);font-size:13px;"><input type="radio" name="pages" value="all" checked onchange="app.saveSettings()"> All</label>
+          <label style="color:var(--text-dim);font-size:13px;"><input type="radio" name="pages" value="range" onchange="app.saveSettings()"> Range</label>
+          <input id="pageRange" class="input" placeholder="1-3,5" style="width:160px;" />
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
+          <label style="min-width:110px;color:var(--text-dim);font-size:13px;">Duplex</label>
+          <input type="checkbox" id="duplexEnabled" onchange="app.saveSettings()">
+          <label for="duplexEnabled" style="color:var(--text-dim);font-size:13px;">Enable</label>
+          <select id="duplexMode" class="input" style="width:160px;">
+            <option value="long-edge">Long-edge (typical)</option>
+            <option value="short-edge">Short-edge</option>
+          </select>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
+          <label style="min-width:110px;color:var(--text-dim);font-size:13px;">Orientation</label>
+          <select id="orientation" class="input" style="width:160px;">
+            <option value="landscape">Landscape</option>
+            <option value="portrait">Portrait</option>
+          </select>
+          <label style="min-width:80px;color:var(--text-dim);font-size:13px;">Paper</label>
+          <select id="paper" class="input" style="width:120px;"><option>Letter</option></select>
+          <label style="min-width:80px;color:var(--text-dim);font-size:13px;">Pages/sheet</label>
+          <select id="pagesPerSheet" class="input" style="width:80px;"><option>1</option><option>2</option><option>4</option></select>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="checkbox" id="saveAsDefault" onchange="app.saveSettings()">
+          <label for="saveAsDefault">Save these as default</label>
+          <button class="btn btn-secondary btn-small" style="margin-left:12px;" onclick="app.loadLastSettings()">Use last settings</button>
+        </div>
+      </div>
+
+      <div class="date-row">
+        <input type="date" id="printDate" class="input date-input">
+        <button class="btn btn-secondary btn-small" onclick="app.setToday()">Today</button>
+        <button class="btn btn-secondary btn-small" onclick="app.setTomorrow()">Tomorrow</button>
+      </div>
+
+      <div class="alert">
+        <strong>Note:</strong> Generates instruction file. For automation, use Windows desktop app.
+      </div>
+
+      <button id="printBtn" class="btn btn-blue" style="width: 100%; margin-bottom: 8px;" onclick="app.generateInstructions()" disabled>
+        📥 Generate Instructions
+      </button>
+
+      <button id="copyBtn" class="btn btn-secondary" style="width: 100%;" onclick="app.copyToClipboard()" disabled>
+        📋 Copy to Clipboard
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const app = {
+      files: [],
+      config: { testMode: true },
+
+      init() {
+        this.loadSettings();
+        this.loadFilesFromStorage();
+        this.setTomorrow();
+        document.getElementById('fileInput').addEventListener('change', (e) => this.handleFileSelect(e));
+        // attempt to load persisted file handle (File System Access API) if available
+        if (this.supportsFileSystemAccess()) this.loadHandleFromIDB().then(h => { if (h) { this.fileHandle = h; document.getElementById('fileHandleName').textContent = h.name || '(selected)'; this.loadListFromHandle(); } }).catch(()=>{});
+      },
+
+      loadSettings() {
+        const saved = localStorage.getItem('scatterplot_settings_v2_word');
+        if (saved) {
+          this.config = JSON.parse(saved);
+          document.getElementById('testMode').checked = !!this.config.testMode;
+          document.getElementById('printerName').value = this.config.printerName || '';
+          document.getElementById('duplex').checked = !!(this.config.duplex && this.config.duplex.enabled);
+          document.getElementById('settingsSavedIndicator').textContent = 'yes';
+          document.getElementById('autoExport').checked = !!this.config.autoExport;
+          // print settings
+          document.getElementById('copies').value = this.config.copies || 1;
+          document.getElementById('collate').checked = !!this.config.collate;
+          if (this.config.pages === 'range') {
+            const el = document.querySelector('input[name="pages"][value="range"]'); if (el) el.checked = true;
+          }
+          document.getElementById('pageRange').value = this.config.page_range || '';
+          document.getElementById('duplexEnabled').checked = !!(this.config.duplex && this.config.duplex.enabled);
+          document.getElementById('duplexMode').value = (this.config.duplex && this.config.duplex.mode) || 'long-edge';
+          document.getElementById('orientation').value = this.config.orientation || 'landscape';
+          document.getElementById('paper').value = this.config.paper || 'Letter';
+          document.getElementById('pagesPerSheet').value = this.config.pages_per_sheet || '1';
+          document.getElementById('saveAsDefault').checked = !!this.config.save_last_used;
+        }
+      },
+
+      loadFilesFromStorage() {
+        try {
+          const raw = localStorage.getItem('scatterplot_files_v2_word');
+          if (raw) {
+            const arr = JSON.parse(raw);
+            // stored entries won't have File objects (browsers won't persist those), keep metadata
+            this.files = arr.map(x => ({ file: null, name: x.name, path: x.path || x.name, size: x.size || 0, lastModified: x.lastModified || 0 }));
+            this.renderFileList();
+          }
+        } catch (e) {
+          console.warn('Failed to load saved files', e);
+        }
+      },
+
+      // File System Access helpers (IndexedDB persistence of handle)
+      supportsFileSystemAccess() {
+        return (typeof window.showSaveFilePicker === 'function') && !!window.indexedDB;
+      },
+
+      saveHandleToIDB(handle) {
+        return new Promise((resolve, reject) => {
+          try {
+            const req = indexedDB.open('scatterplot-file-db', 1);
+            req.onupgradeneeded = (e) => { e.target.result.createObjectStore('handles'); };
+            req.onsuccess = (e) => {
+              const db = e.target.result;
+              const tx = db.transaction('handles', 'readwrite');
+              tx.objectStore('handles').put(handle, 'file-list-handle');
+              tx.oncomplete = () => { db.close(); resolve(); };
+              tx.onerror = () => { db.close(); reject(tx.error); };
+            };
+            req.onerror = () => reject(req.error);
+          } catch (err) { reject(err); }
+        });
+      },
+
+      loadHandleFromIDB() {
+        return new Promise((resolve, reject) => {
+          try {
+            const req = indexedDB.open('scatterplot-file-db', 1);
+            req.onupgradeneeded = (e) => { e.target.result.createObjectStore('handles'); };
+            req.onsuccess = (e) => {
+              const db = e.target.result;
+              const tx = db.transaction('handles', 'readonly');
+              const get = tx.objectStore('handles').get('file-list-handle');
+              get.onsuccess = () => { resolve(get.result); db.close(); };
+              get.onerror = () => { reject(get.error); db.close(); };
+            };
+            req.onerror = () => reject(req.error);
+          } catch (err) { reject(err); }
+        });
+      },
+
+      async chooseSaveLocation() {
+        if (!this.supportsFileSystemAccess()) { alert('File System Access API not supported in this browser.'); return; }
+        try {
+          const handle = await window.showSaveFilePicker({ suggestedName: 'file-list.json', types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }] });
+          this.fileHandle = handle;
+          await this.saveHandleToIDB(handle);
+          document.getElementById('fileHandleName').textContent = handle.name || '(selected)';
+          // write current list
+          await this.writeListToHandle();
+          alert('Saved handle and wrote file-list.json to chosen location.');
+        } catch (err) { console.warn('chooseSaveLocation error', err); alert('Failed to choose location: ' + err); }
+      },
+
+      async writeListToHandle() {
+        if (!this.fileHandle) return false;
+        try {
+          const hasPermission = await this.verifyPermission(this.fileHandle, true);
+          if (!hasPermission) { alert('Permission denied to write file.'); return false; }
+          const writable = await this.fileHandle.createWritable();
+          const toStore = this.files.map(f => ({ name: f.name, path: f.path, size: f.size || 0, lastModified: f.lastModified || 0 }));
+          await writable.write(JSON.stringify(toStore, null, 2));
+          await writable.close();
+          return true;
+        } catch (err) { console.warn('writeListToHandle failed', err); return false; }
+      },
+
+      async loadListFromHandle() {
+        if (!this.fileHandle) return false;
+        try {
+          const hasPermission = await this.verifyPermission(this.fileHandle, false);
+          if (!hasPermission) { console.warn('No read permission for handle'); return false; }
+          const file = await this.fileHandle.getFile();
+          const text = await file.text();
+          const arr = JSON.parse(text);
+          this.files = arr.map(x => ({ file: null, name: x.name, path: x.path || x.name, size: x.size || 0, lastModified: x.lastModified || 0 }));
+          this.renderFileList();
+          return true;
+        } catch (err) { console.warn('loadListFromHandle failed', err); return false; }
+      },
+
+      async verifyPermission(fileHandle, withWrite) {
+        if (!fileHandle.queryPermission) return true;
+        const opts = {};
+        if (withWrite) opts.mode = 'readwrite';
+        try {
+          let perm = await fileHandle.queryPermission(opts);
+          if (perm === 'granted') return true;
+          perm = await fileHandle.requestPermission(opts);
+          return perm === 'granted';
+        } catch (err) { return false; }
+      },
+
+      saveSettings() {
+        this.config.testMode = !!document.getElementById('testMode').checked;
+        this.config.printerName = document.getElementById('printerName').value || '';
+        this.config.autoExport = !!document.getElementById('autoExport').checked;
+        // print settings
+        this.config.copies = parseInt(document.getElementById('copies').value || 1, 10);
+        this.config.collate = !!document.getElementById('collate').checked;
+        const pagesEl = document.querySelector('input[name="pages"]:checked');
+        this.config.pages = pagesEl ? pagesEl.value : 'all';
+        this.config.page_range = document.getElementById('pageRange').value || '';
+        this.config.duplex = { enabled: !!document.getElementById('duplexEnabled').checked, mode: document.getElementById('duplexMode').value || 'long-edge' };
+        this.config.orientation = document.getElementById('orientation').value || 'landscape';
+        this.config.paper = document.getElementById('paper').value || 'Letter';
+        this.config.pages_per_sheet = parseInt(document.getElementById('pagesPerSheet').value || '1', 10);
+        this.config.save_last_used = !!document.getElementById('saveAsDefault').checked;
+        localStorage.setItem('scatterplot_settings_v2_word', JSON.stringify(this.config));
+        document.getElementById('settingsSavedIndicator').textContent = 'yes';
+        // if user chose a persistent handle, write config next to file-list (optional export flow handled separately)
+      },
+
+      selectFiles() {
+        document.getElementById('fileInput').click();
+      },
+
+      handleFileSelect(e) {
+        Array.from(e.target.files).forEach(file => {
+          if (!this.files.some(f => f.name === file.name && f.size === file.size)) {
+            const fullPath = file.path || file.webkitRelativePath || file.name;
+            this.files.push({
+              file: file,
+              name: file.name,
+              path: fullPath,
+              size: file.size
+            });
+          }
+        });
+        this.renderFileList();
+        this.saveFilesToStorage();
+        if (this.config.autoExport) {
+          // prefer persistent handle when available
+          if (this.fileHandle) {
+            this.writeListToHandle().catch(() => this.exportList());
+          } else {
+            this.exportList();
+          }
+        }
+        e.target.value = '';
+      },
+
+      removeFile(index) {
+        this.files.splice(index, 1);
+        this.renderFileList();
+      },
+
+      clearFiles() {
+        if (this.files.length > 0 && confirm('Remove all files?')) {
+          this.files = [];
+          this.renderFileList();
+        }
+      },
+
+      renderFileList() {
+        const list = document.getElementById('fileList');
+        const count = document.getElementById('fileCount');
+        const printBtn = document.getElementById('printBtn');
+        const copyBtn = document.getElementById('copyBtn');
+
+        count.textContent = this.files.length;
+
+        if (this.files.length === 0) {
+          list.innerHTML = '<div class="empty-state"><div class="empty-icon">📄</div><div style="font-size: 14px; font-weight: 500;">No files selected</div></div>';
+          printBtn.disabled = true;
+          copyBtn.disabled = true;
+          return;
+        }
+
+        printBtn.disabled = false;
+        copyBtn.disabled = false;
+
+        list.innerHTML = this.files.map((item, index) => {
+          const available = item.file ? true : false;
+          const status = available ? `<div style="color:#7CFC9A;font-size:12px;">Available</div>` : `<div style="color:#ff8c42;font-size:12px;">Not found</div>`;
+          const locateBtn = available ? '' : `<button class="btn btn-small btn-secondary" onclick="app.locateFile(${index})">Locate</button>`;
+          return `
+          <div class="file-item">
+            <div class="file-info">
+              <div class="file-name">📄 ${item.name} ${status}</div>
+              <div class="file-path">${item.path}</div>
+              <div class="file-size">${this.formatFileSize(item.size)}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              ${locateBtn}
+              <div class="file-remove" onclick="app.removeFile(${index})">✕</div>
+            </div>
+          </div>
+        `}).join('');
+        this.saveFilesToStorage();
+        if (this.config.autoExport) {
+          if (this.fileHandle) this.writeListToHandle().catch(() => this.exportList()); else this.exportList();
+        }
+      },
+
+      saveFilesToStorage() {
+        try {
+          const toStore = this.files.map(f => ({ name: f.name, path: f.path, size: f.size || 0, lastModified: f.lastModified || (f.file ? f.file.lastModified : 0) }));
+          localStorage.setItem('scatterplot_files_v2_word', JSON.stringify(toStore));
+        } catch (e) {
+          console.warn('Failed to save files', e);
+        }
+      },
+
+      locateFile(index) {
+        // create a temporary file input to let user pick the relocated file
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        input.onchange = (e) => {
+          const f = e.target.files[0];
+          if (!f) return;
+          const fullPath = f.path || f.webkitRelativePath || f.name;
+          this.files[index] = { file: f, name: f.name, path: fullPath, size: f.size, lastModified: f.lastModified };
+          this.renderFileList();
+        };
+        input.click();
+      },
+
+      exportList() {
+        const toStore = this.files.map(f => ({ name: f.name, path: f.path, size: f.size || 0, lastModified: f.lastModified || 0 }));
+        const blob = new Blob([JSON.stringify(toStore, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'scatterplot-file-list.json';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 150);
+      },
+
+      importList(e) {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const arr = JSON.parse(ev.target.result);
+            this.files = arr.map(x => ({ file: null, name: x.name, path: x.path || x.name, size: x.size || 0, lastModified: x.lastModified || 0 }));
+            this.renderFileList();
+            this.saveFilesToStorage();
+            alert('Imported ' + this.files.length + ' files');
+          } catch (err) { alert('Failed to import list: ' + err); }
+        };
+        reader.readAsText(f);
+        e.target.value = '';
+      },
+
+      formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      },
+
+      setToday() {
+        document.getElementById('printDate').value = this.formatDate(new Date());
+      },
+
+      setTomorrow() {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('printDate').value = this.formatDate(tomorrow);
+      },
+
+      formatDate(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      },
+
+      formatDateForWord(dateString) {
+        const date = new Date(dateString);
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+      },
+
+      buildInstructionsText() {
+        const printDate = document.getElementById('printDate').value;
+        const testMode = document.getElementById('testMode').checked;
+        const formattedDate = this.formatDateForWord(printDate);
+
+        let output = `SCATTERPLOT PRINT INSTRUCTIONS\n`;
+        output += `Generated: ${new Date().toLocaleString()}\n\n`;
+        output += `===========================================\n\n`;
+        output += `PRINT DATE: ${formattedDate}\n`;
+        output += `TEST MODE: ${testMode ? 'YES (Do not save)' : 'NO (Save files)'}\n`;
+        output += `FILES: ${this.files.length}\n\n`;
+        output += `===========================================\n\n`;
+        
+        if (testMode) {
+          output += `⚠️ TEST MODE\n`;
+          output += `1. Open document in Word\n2. Go to Header (Insert → Header) or check header/footer\n3. Look for "Date:" or "Date" text\n4. Replace ONLY the date part (keep any underscores)\n5. If no underscores exist, add 3 before and 3 after\n6. If no colon after "Date", add one\n7. Example: "Date 1/1/2026" becomes "Date: ___${formattedDate}___"\n8. Example: "Date: ___December 19, 2026___" becomes "Date: ___${formattedDate}___"\n9. Print\n10. Close WITHOUT SAVING\n\n`;
+        } else {
+          output += `✅ LIVE MODE\n`;
+          output += `1. Open document in Word\n2. Go to Header (Insert → Header) or check header/footer\n3. Look for "Date:" or "Date" text\n4. Replace ONLY the date part (keep any underscores)\n5. If no underscores exist, add 3 before and 3 after\n6. If no colon after "Date", add one\n7. Example: "Date: ___December 19, 2026___" becomes "Date: ___${formattedDate}___"\n8. Example: "Date: 1/1/2026" becomes "Date: ___${formattedDate}___"\n9. SAVE (Ctrl+S)\n10. Print\n11. Close\n\n`;
+        }
+
+        output += `FILES:\n\n`;
+        this.files.forEach((item, index) => {
+          output += `${index + 1}. ${item.name}\n   Path: ${item.path}\n   Update to: ${formattedDate}\n\n`;
+        });
+
+        output += `\nDate format: "${formattedDate}"\nLocation: Word document header (top of page) or header/footer; look for "Date:" or "Date" text\n⚠️ IMPORTANT: \n- Keep any existing underscores before/after the date\n- If no underscores exist, add 3 before and 3 after\n- If no colon after "Date", add one\nExamples:\n"Date: ___December 19, 2026___" → "Date: ___${formattedDate}___"\n"Date: 1/1/2026" → "Date: ___${formattedDate}___"\n"Date 1/1/2026" → "Date: ___${formattedDate}___"\n`;
+        return output;
+      },
+
+      async copyToClipboard() {
+        if (this.files.length === 0 || !document.getElementById('printDate').value) {
+          alert('⚠️ Add files and select date first');
+          return;
+        }
+
+        const output = this.buildInstructionsText();
+        try {
+          await navigator.clipboard.writeText(output);
+          alert('✅ Copied to clipboard!');
+        } catch {
+          const textarea = document.createElement('textarea');
+          textarea.value = output;
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          alert('✅ Copied to clipboard!');
+        }
+      },
+
+      generateInstructions() {
+        if (this.files.length === 0 || !document.getElementById('printDate').value) {
+          alert('⚠️ Add files and select date first');
+          return;
+        }
+
+        const output = this.buildInstructionsText();
+        const printDate = document.getElementById('printDate').value;
+        
+        const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `scatterplot-instructions-word-${printDate}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 100);
+
+        alert(`✅ Downloaded!\n\nFiles: ${this.files.length}\nDate: ${this.formatDateForWord(printDate)}`);
+      }
+    };
+
+    window.addEventListener('load', () => app.init());
+  </script>
+</body>
+</html>

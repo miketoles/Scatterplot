@@ -1,0 +1,16 @@
+Files to include when packaging/distributing (place next to the EXE):
+
+- word_printer.exe  (built via PyInstaller --onefile) OR word_printer.py + venv
+- config.json
+- file-list.json
+- README.md
+- BUILD.md
+- run_exe.bat
+- config_gui.py  (optional helper GUI for editing config and file list)
+- requirements.txt
+
+Optional for advanced troubleshooting:
+- logs/ (if you choose to emit logs)
+
+Notes:
+- You can put the JSON files in %APPDATA%\\ScatterplotPrinter instead; the EXE will search there.
