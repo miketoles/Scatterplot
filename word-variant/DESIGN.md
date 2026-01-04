@@ -84,6 +84,10 @@ Recommended Implementation (Python / pywin32):
 - Export/import: JSON export (`scatterplot-file-list.json`) and import handled in the UI; example `file-list.json` and `config.json` added for Windows testing.
 - Python prototype: `word_printer.py` included — opens Word via COM, replaces dates in headers/footers/body/fields/content-controls, prints, saves/closes. Prototype checks `%APPDATA%/ScatterplotPrinter/file-list.json` and searches multiple locations so the EXE can run from any folder.
 - DESIGN.md updated to document storage and run-from-anywhere behavior.
+ - Logging: `word_printer.py` now captures stdout/stderr to `logs/word_printer.log` next to the script/EXE for diagnostics.
+ - GUI: `config_gui.py` (minimal `tkinter` helper) added to edit `config.json` and `file-list.json` for non-technical users; can be bundled via PyInstaller as a windowed app.
+ - Distribution preview: created `word-variant-for-windows.zip` containing all necessary files (except the built EXE) to transfer to a Windows machine for testing.
+ - Git: repository initialized and current changes committed; all added files have been staged and committed in the `Scatterplot Printer App` repo.
 
 ## Remaining work / Next steps (pickable items)
 
@@ -94,6 +98,7 @@ Recommended Implementation (Python / pywin32):
 
 2. Duplex/printer reliability (recommended)
    - Implement DEVMODE-based duplex control in the prototype so duplex is enforced via printer driver (Windows-specific). This requires calling Win32 APIs and marshalling DEVMODE; will add as an optional module.
+    - Note: a DEVMODE-based attempt has been added to the prototype (`word_printer.py`) to set `devmode.Duplex` where available, but this requires on-device testing with the target printer drivers. Marked as in-progress and requires verification/fallbacks.
 
 3. User-facing configuration GUI (optional)
    - Create a small `tkinter` GUI for Windows to edit `config.json` and `file-list.json` and to test-print a single document. This GUI will be bundled with the EXE.
@@ -108,6 +113,11 @@ Recommended Implementation (Python / pywin32):
 6. Optional: Web → Desktop integration
    - Add a simple helper (CLI or small script) that copies `file-list.json` from the browser-chosen location into `%APPDATA%/ScatterplotPrinter/` on the Windows machine to bridge web UI and EXE usage for non-Chromium browsers.
 
+   Recent commits & artifacts
+
+   - `word-variant` now contains: `word_printer.py`, `config.json`, `file-list.json`, `config_gui.py`, `README.md`, `BUILD.md`, `INSTRUCTIONS_FOR_WINDOWS.md`, `requirements.txt`, `run_exe.bat`, `distribution_manifest.txt`, and the preview zip `word-variant-for-windows.zip` (placed in the parent folder).
+   - A git repository was initialized in `Scatterplot Printer App` and changes committed. Use git to inspect history or revert if needed.
+
 ## How I'll proceed when you return
 
 - If you ask me to continue, I will prioritize:
@@ -116,3 +126,4 @@ Recommended Implementation (Python / pywin32):
   3. Helping you test the flows and iterate on edge-case replacements for your provided reference files.
 
 If you'd prefer a different order, tell me which items to prioritize and I'll pick them up next.
+
