@@ -66,3 +66,33 @@ python word_printer.py
 7) Troubleshooting duplex enforcement
 
 - Driver-level enforcement uses DEVMODE and is printer/driver specific. If the EXE cannot force duplex for a particular printer, the script will try Word-level settings but you may need a manual two-pass workaround. Test on a machine with the target printer.
+
+Packaging the `tkinter` GUI (optional)
+
+If you want to produce a separate GUI executable for non-technical users (`config_gui.exe`), build it with PyInstaller as a windowed app. Example commands:
+
+```powershell
+# Build the CLI/main printer EXE (console suppressed)
+pyinstaller --onefile --noconsole --add-data "config.json;." --add-data "file-list.json;." --add-data "logs;logs" word_printer.py
+
+# Build the GUI EXE (tkinter) as a windowed app
+pyinstaller --onefile --windowed --add-data "config.json;." --add-data "file-list.json;." --add-data "logs;logs" config_gui.py
+```
+
+Notes and common PyInstaller flags
+
+- `--onefile` creates a single bundled EXE. This is the simplest for distribution.
+- `--noconsole` or `--windowed` prevents a console window from appearing for GUI users.
+- `--add-data "source;dest"` bundles data files. On Windows use a semicolon (`;`) between source and dest.
+- Common hidden imports when bundling pywin32 or other packages sometimes include `win32timezone`. If you see import errors, rebuild with:
+
+```powershell
+pyinstaller --onefile --noconsole --hidden-import=win32timezone --add-data "config.json;." --add-data "file-list.json;." word_printer.py
+```
+
+- If packaging both EXEs, include `config.json` and `file-list.json` (or instruct users to place them in `%APPDATA%\ScatterplotPrinter`).
+
+Testing the GUI EXE
+
+- After building `config_gui.exe`, run it to confirm it opens and can read/write `config.json` and `file-list.json` in the same folder.
+

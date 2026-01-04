@@ -44,4 +44,10 @@ Troubleshooting
 
 Support and next steps
 
+Logs
+
+- Runtime output (stdout/stderr) is captured to `logs/word_printer.log` next to the script when the script runs. If you run the EXE, the same `logs` folder next to the EXE will be used.
+- If you need diagnostics, open that file in a text editor after running a test to inspect errors and progress messages.
+
+
 - To help a non-technical recipient, I can produce a small GUI to edit `config.json` and `file-list.json`, then bundle it with PyInstaller. Ask me to add it and I'll implement and include build steps.
