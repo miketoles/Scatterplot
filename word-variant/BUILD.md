@@ -1,99 +1,55 @@
-# Building `scatterplot_printer.exe` (no-admin, reproducible)
+# Building `scatterplot_printer.exe` (no-admin, minimal steps)
 
-These steps are for building the one-file Windows EXE from `word_printer.py` on a Windows machine. None of the steps require administrator privileges if you install Python per-user (Microsoft Store or user installer) and use a virtual environment.
+These steps build a one-file Windows EXE from `word_printer.py`. No admin rights needed if Python is installed per-user.
 
-1) Prepare Windows machine
+1) Install Python (one-time)
+- Install Python 3.10 or 3.11 (Microsoft Store or user installer).
+- Verify: `python --version`
 
-- Install Python 3.10/3.11 from the Microsoft Store (per-user) or the official installer choosing "Install for me only". Verify with:
-
-```powershell
-python --version
-```
-
-2) Create and activate a virtual environment (recommended)
+2) Create a venv and install deps (one-time per machine)
 
 ```powershell
 cd C:\path\to\word-variant
 python -m venv venv
-venv\Scripts\Activate.ps1   # PowerShell
-# or venv\Scripts\activate.bat  # cmd.exe
+venv\Scripts\Activate.ps1
 pip install --upgrade pip
+pip install pywin32 pyinstaller
 ```
 
-3) Install build/runtime dependencies
+3) Build the EXE
 
 ```powershell
-pip install pywin32
-pip install pyinstaller
-```
-
-4) Build the EXE with PyInstaller
-
-Run PyInstaller from the `word-variant` folder. Include `config.json` and `file-list.json` as data files so the EXE can pick them up when colocated.
-
-```powershell
-# produce `scatterplot_printer.exe` from the same source
 pyinstaller --onefile --noconsole --name scatterplot_printer --add-data "config.json;." --add-data "file-list.json;." word_printer.py
 ```
 
-- Output will be in `dist\scatterplot_printer.exe`.
-- If your config or file-list are stored in `%APPDATA%\ScatterplotPrinter`, you don't need to bundle them, but bundling simplifies distribution.
+Output: `dist\scatterplot_printer.exe`
 
-5) Quick runtime checks (on the Windows machine)
+4) Quick test
 
-- Test without printing by enabling `test_mode` in `config.json` (true), then run:
+- Set `test_mode` to `true` in `config.json`.
+- Run: `.\dist\scatterplot_printer.exe`
 
-```powershell
-.\dist\scatterplot_printer.exe
-```
+5) Share with others
 
-- If you prefer to run the script directly (no EXE), use:
+Zip and send:
+- `dist\scatterplot_printer.exe`
+- `config.json`
+- `file-list.json`
+- `run_exe.bat` (optional)
 
-```powershell
-venv\Scripts\Activate.ps1
-python word_printer.py
-```
+Users can keep `config.json` and `file-list.json` next to the EXE or in `%APPDATA%\ScatterplotPrinter`.
 
-6) Distribution notes (for giving to other users)
-
-- The simplest distributable is a ZIP containing:
-  - `scatterplot_printer.exe` (from `dist`)
-  - `config.json` (example edited for the recipient)
-  - `file-list.json` (or instruct them to populate via Explorer)
-  - `README.md` and `run_exe.bat` (optional)
-
-- Users can place `config.json` and `file-list.json` next to the EXE or in `%APPDATA%\ScatterplotPrinter`.
-
-7) Troubleshooting duplex enforcement
-
-- Driver-level enforcement uses DEVMODE and is printer/driver specific. If the EXE cannot force duplex for a particular printer, the script will try Word-level settings but you may need a manual two-pass workaround. Test on a machine with the target printer.
-
-Packaging the `tkinter` GUI (optional)
-
-If you want to produce a separate GUI executable for non-technical users (`config_gui.exe`), build it with PyInstaller as a windowed app. Example commands:
-
-```powershell
-# Build the CLI/main printer EXE (console suppressed)
-pyinstaller --onefile --noconsole --add-data "config.json;." --add-data "file-list.json;." --add-data "logs;logs" word_printer.py
-
-# Build the GUI EXE (tkinter) as a windowed app
-pyinstaller --onefile --windowed --add-data "config.json;." --add-data "file-list.json;." --add-data "logs;logs" config_gui.py
-```
-
-Notes and common PyInstaller flags
-
-- `--onefile` creates a single bundled EXE. This is the simplest for distribution.
-- `--noconsole` or `--windowed` prevents a console window from appearing for GUI users.
-- `--add-data "source;dest"` bundles data files. On Windows use a semicolon (`;`) between source and dest.
-- Common hidden imports when bundling pywin32 or other packages sometimes include `win32timezone`. If you see import errors, rebuild with:
+Troubleshooting
+- If you see missing module errors when running the EXE, rebuild with:
 
 ```powershell
 pyinstaller --onefile --noconsole --hidden-import=win32timezone --add-data "config.json;." --add-data "file-list.json;." word_printer.py
 ```
 
-- If packaging both EXEs, include `config.json` and `file-list.json` (or instruct users to place them in `%APPDATA%\ScatterplotPrinter`).
+- Duplex enforcement is driver-specific. Test on a machine with the target printer installed.
 
-Testing the GUI EXE
+Optional: GUI EXE (for non-technical users)
 
-- After building `config_gui.exe`, run it to confirm it opens and can read/write `config.json` and `file-list.json` in the same folder.
-
+```powershell
+pyinstaller --onefile --windowed --add-data "config.json;." --add-data "file-list.json;." config_gui.py
+```

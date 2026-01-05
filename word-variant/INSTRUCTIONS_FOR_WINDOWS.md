@@ -1,12 +1,8 @@
-Steps to transfer and test on Windows (copy this file and the entire `word-variant` folder to your Windows PC)
+Quick Windows setup (no-admin)
 
-1) Transfer folder
+1) Copy `word-variant` to the Windows PC.
 
-- Copy the full `word-variant` folder to the Windows PC (USB, network share, or cloud sync).
-
-2) Per-user Python + venv (no admin required)
-
-Open PowerShell and run:
+2) Open PowerShell:
 
 ```powershell
 cd C:\path\to\word-variant
@@ -17,45 +13,35 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-3) Use the GUI to prepare config and file list (optional, recommended)
-
-From the same PowerShell with the venv activated:
+3) Configure (recommended):
 
 ```powershell
 python config_gui.py
 ```
 
-- Use "Add files" to collect the Word documents you intend to process. Save the file list.
-- Set `printer_name` to the exact printer device name shown in Windows Settings → Printers & scanners.
-- Keep `test_mode`=true while validating.
+- Add the Word files to process.
+- Set `printer_name` exactly as shown in Windows Printers.
+- Leave `test_mode` true for initial tests.
 
-4) Quick script run (test mode)
+4) Test run (no printing):
 
 ```powershell
-# ensure venv active
 python word_printer.py
 ```
 
-5) Build the EXE (optional for distribution)
+5) Build and share EXE (optional):
 
 ```powershell
 pip install pyinstaller
 pyinstaller --onefile --noconsole --name scatterplot_printer --add-data "config.json;." --add-data "file-list.json;." word_printer.py
-# result: dist\scatterplot_printer.exe
 ```
 
-6) Run the EXE
+Share these files:
+- `dist\scatterplot_printer.exe`
+- `config.json`
+- `file-list.json`
+- `run_exe.bat` (optional)
 
-- Place `config.json` and `file-list.json` next to `scatterplot_printer.exe` or in `%APPDATA%\ScatterplotPrinter`.
-- Use `run_exe.bat` to launch.
-
-7) Test duplex printing
-
-- Set `test_mode` to `false` and run on a machine with the target printer installed.
-- If duplex enforcement fails, try manually printing a small document from Word to confirm printer duplex option.
-
-8) Distribute
-
-- Zip the files in `distribution_manifest.txt` (except the EXE build output if you want to build on the target machine).
-
-Contact me if you want a signed installer or an MSI — that will require additional packaging steps and optionally an admin to install.
+Notes:
+- `config.json` and `file-list.json` can sit next to the EXE or in `%APPDATA%\ScatterplotPrinter`.
+- For real printing, set `test_mode` to `false` and test on a machine with the target printer.
