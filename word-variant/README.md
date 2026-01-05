@@ -13,6 +13,12 @@ Run this once on Windows PowerShell to set up dependencies:
 .\setup_windows.ps1
 ```
 
+One-click option (recommended for non-technical users):
+
+```bat
+setup_windows_one_click.bat
+```
+
 To build the EXE in the same step:
 
 ```powershell
