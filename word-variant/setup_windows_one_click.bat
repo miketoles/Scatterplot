@@ -19,7 +19,5 @@ if not "%EXITCODE%"=="0" (
 )
 
 echo.
-echo Setup complete.
-echo EXE is in dist\scatterplot_printer.exe
-echo Share folder is ready at share\
+echo Installed! Run the Scatterplot Printer icon from your desktop.
 pause

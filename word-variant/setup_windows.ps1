@@ -61,6 +61,27 @@ function Prepare-ShareFolder {
     Write-Info "Share-ready files copied to .\\share"
 }
 
+function Create-DesktopShortcut {
+    try {
+        $desktop = [Environment]::GetFolderPath("Desktop")
+        if (-not $desktop) { return }
+        $target = Join-Path $scriptDir "share\\scatterplot_printer.exe"
+        if (-not (Test-Path $target)) {
+            $target = Join-Path $scriptDir "dist\\scatterplot_printer.exe"
+        }
+        if (-not (Test-Path $target)) { return }
+        $shell = New-Object -ComObject WScript.Shell
+        $shortcutPath = Join-Path $desktop "Scatterplot Printer.lnk"
+        $shortcut = $shell.CreateShortcut($shortcutPath)
+        $shortcut.TargetPath = $target
+        $shortcut.WorkingDirectory = Split-Path -Parent $target
+        $shortcut.IconLocation = $target
+        $shortcut.Save()
+        Write-Info "Desktop shortcut created: $shortcutPath"
+    } catch {
+        Write-Warn "Could not create desktop shortcut."
+    }
+}
 try {
     Assert-Python
     Ensure-Venv
@@ -70,6 +91,7 @@ try {
         Install-PyInstaller
         Build-Exe
         Prepare-ShareFolder
+        Create-DesktopShortcut
         Write-Info "Launching EXE..."
         & ".\\dist\\scatterplot_printer.exe"
     } else {
