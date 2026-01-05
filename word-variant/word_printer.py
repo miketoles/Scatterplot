@@ -20,15 +20,6 @@ import argparse
 import datetime
 import re
 
-try:
-    import win32com.client
-    import pythoncom
-    import win32print
-    import win32con
-except Exception as e:
-    print("This prototype must be run on Windows with pywin32 installed.")
-    raise
-
 # Basic logging to file (also captures stdout/stderr)
 import logging
 import time
@@ -69,10 +60,117 @@ def format_date_for_word(date_str):
     return d.strftime("%B %d, %Y")
 
 
+MONTH_RE = (
+    r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|"
+    r"Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
+)
+DATE_RE = rf"(?:{MONTH_RE}\s+\d{{1,2}},\s*\d{{4}}|\d{{1,2}}[/-]\d{{1,2}}[/-]\d{{2,4}})"
+DATE_UNDERSCORE_RE = re.compile(
+    r"(?i)(?P<prefix>\bDate\b\s*:?)"
+    r"(?P<ws1>\s*)"
+    r"(?P<left>_+)"
+    r"(?P<ws2>\s*)"
+    r"(?P<date>[^_\r\n]+?)"
+    r"(?P<ws3>\s*)"
+    r"(?P<right>_+)"
+)
+DATE_INLINE_RE = re.compile(
+    rf"(?i)(?P<prefix>\bDate\b\s*:?)"
+    rf"(?P<ws1>\s*)"
+    rf"(?P<left>_{{1,}})?"
+    rf"(?P<ws2>\s*)"
+    rf"(?P<date>{DATE_RE})"
+    rf"(?P<ws3>\s*)"
+    rf"(?P<right>_{{1,}})?"
+)
+DATE_EMPTY_LINE_RE = re.compile(
+    r"(?i)(?P<leading>\s*)"
+    r"(?P<prefix>\bDate\b\s*:?)"
+    r"(?P<ws1>\s*)"
+    r"(?P<left>_+)?"
+    r"(?P<ws2>\s*)"
+    r"(?P<right>_+)?"
+    r"(?P<ws3>\s*)$"
+)
+
+
+def replace_date_text(text, formatted_date):
+    def repl(match):
+        def normalized_prefix():
+            ws1 = match.group('ws1') if 'ws1' in match.groupdict() else ""
+            spacer = ws1 if ws1 else " "
+            return f"Date:{spacer}"
+
+        left = match.group('left') or ""
+        right = match.group('right') or ""
+        if not left and not right:
+            left = "__"
+            right = "__"
+        return (
+            f"{normalized_prefix()}"
+            f"{left}{match.group('ws2')}{formatted_date}{match.group('ws3')}{right}"
+        )
+
+    if DATE_UNDERSCORE_RE.search(text):
+        return DATE_UNDERSCORE_RE.sub(repl, text, count=1)
+    if DATE_INLINE_RE.search(text):
+        return DATE_INLINE_RE.sub(repl, text, count=1)
+
+    lines = text.splitlines(True)
+    for idx, line in enumerate(lines):
+        if 'Date' not in line and 'date' not in line:
+            continue
+        if DATE_INLINE_RE.search(line) or DATE_UNDERSCORE_RE.search(line):
+            continue
+        match = DATE_EMPTY_LINE_RE.search(line)
+        if not match:
+            continue
+        left = match.group('left') or ""
+        right = match.group('right') or ""
+        if not left and not right:
+            left = "__"
+            right = "__"
+        ws1 = match.group('ws1') or " "
+        lines[idx] = (
+            f"{match.group('leading')}Date:{ws1}"
+            f"{left}{match.group('ws2')}{formatted_date}{match.group('ws3')}{right}"
+        )
+        return "".join(lines)
+    return text
+
+
+def run_replacement_tests(formatted_date):
+    samples = [
+        "Date:     January 1, 2026",
+        "Date:\tJanuary 1, 2026",
+        "Date : January 1, 2026",
+        "Date\t:\tJanuary 1, 2026",
+        "Date     January 1, 2026",
+        "Date: ",
+        "Date: January 1, 2026",
+        "Date: _January 1, 2026",
+        "Date: _1/1/2026_",
+        "Date: __January 1, 2026__",
+        "Date: January 1, 2026_",
+        "Date: _January 1, 2026_",
+        "Date:",
+        "Date: ____",
+        "Date 1/1/2026",
+        "Header left    Date: _1/1/2026_    Room 3",
+    ]
+    print("Replacement test harness")
+    print(f"Using formatted date: {formatted_date}")
+    print("")
+    for s in samples:
+        out = replace_date_text(s, formatted_date)
+        print(f"IN : {s}")
+        print(f"OUT: {out}")
+        print("")
+
+
 def replace_date_in_headers(doc, formatted_date):
     # Iterate sections and headers/footers; perform a simple replacement strategy.
-    # This is conservative: find 'Date' and replace trailing content on that line with ___formatted_date___
-    pattern = re.compile(r"(Date[:\s]*)(.*)", re.IGNORECASE)
+    # Preserve underscore spacing when a date is already underscored.
     for section in doc.Sections:
         # Headers collection: iterate by index (1-based COM collection)
         try:
@@ -82,8 +180,9 @@ def replace_date_in_headers(doc, formatted_date):
                 rng = hdr.Range
                 txt = rng.Text
                 if 'Date' in txt or 'date' in txt:
-                    newtxt = pattern.sub(rf"\1___{formatted_date}___", txt)
-                    rng.Text = newtxt
+                    newtxt = replace_date_text(txt, formatted_date)
+                    if newtxt != txt:
+                        rng.Text = newtxt
         except Exception:
             pass
 
@@ -94,8 +193,9 @@ def replace_date_in_headers(doc, formatted_date):
                 rng = ftr.Range
                 txt = rng.Text
                 if 'Date' in txt or 'date' in txt:
-                    newtxt = pattern.sub(rf"\1___{formatted_date}___", txt)
-                    rng.Text = newtxt
+                    newtxt = replace_date_text(txt, formatted_date)
+                    if newtxt != txt:
+                        rng.Text = newtxt
         except Exception:
             pass
 
@@ -105,11 +205,11 @@ def replace_date_in_body(doc, formatted_date):
         rng = doc.Content
         txt = rng.Text
         if 'Date' in txt or 'date' in txt:
-            pattern = re.compile(r"(Date[:\s]*)(.*)", re.IGNORECASE)
-            newtxt = pattern.sub(rf"\1___{formatted_date}___", txt)
+            newtxt = replace_date_text(txt, formatted_date)
             # replace entire document text (conservative)
-            rng.Text = newtxt
-            return True
+            if newtxt != txt:
+                rng.Text = newtxt
+                return True
     except Exception:
         return False
     return False
@@ -146,8 +246,9 @@ def replace_content_controls(doc, formatted_date):
                 tag = getattr(cc, 'Tag', '') or ''
                 rngtxt = getattr(cc.Range, 'Text', '') or ''
                 if any(x in (title + tag + rngtxt).lower() for x in ['date', 'Date'.lower()]):
-                    # place formatted date inside underscores
-                    cc.Range.Text = f"Date: ___{formatted_date}___"
+                    newtxt = replace_date_text(rngtxt, formatted_date)
+                    if newtxt != rngtxt:
+                        cc.Range.Text = newtxt
             except Exception:
                 continue
     except Exception:
@@ -155,6 +256,15 @@ def replace_content_controls(doc, formatted_date):
 
 
 def process_files(file_paths, config):
+    try:
+        import win32com.client
+        import pythoncom
+        import win32print
+        import win32con
+    except Exception:
+        print("This prototype must be run on Windows with pywin32 installed.")
+        raise
+
     pythoncom.CoInitialize()
     word = win32com.client.Dispatch('Word.Application')
     word.Visible = False
@@ -315,7 +425,13 @@ def main():
     ap.add_argument('--files', help='Path to file-list.json (array of paths)')
     ap.add_argument('--date', help='Print date (YYYY-MM-DD). Defaults to tomorrow', default=None)
     ap.add_argument('--test', help='Run in test mode (do not save)', action='store_true')
+    ap.add_argument('--test-replace', help='Run date replacement tests and exit', action='store_true')
     args = ap.parse_args()
+    if args.test_replace:
+        date_str = args.date or (datetime.date.today() + datetime.timedelta(days=1)).isoformat()
+        formatted = format_date_for_word(date_str)
+        run_replacement_tests(formatted)
+        return
     # Determine directories for locating config/file-list so exe can be run from anywhere.
     exe_dir = None
     try:
