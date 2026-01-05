@@ -19,6 +19,8 @@
 
 Objective: produce a self-contained Windows executable that iterates through a user-configurable list of Word documents, updates the header date, prints to a configured network printer (duplex), optionally saves the document (unless Test Mode), and closes Word. The executable should remember printer settings and file list configuration per-user.
 
+Repo: https://github.com/miketoles/Scatterplot.git
+
 Constraints & Requirements:
 
 - Target machines: Windows 10/11 with Microsoft Word installed (required for COM automation).
@@ -126,4 +128,3 @@ Recommended Implementation (Python / pywin32):
   3. Helping you test the flows and iterate on edge-case replacements for your provided reference files.
 
 If you'd prefer a different order, tell me which items to prioritize and I'll pick them up next.
-
