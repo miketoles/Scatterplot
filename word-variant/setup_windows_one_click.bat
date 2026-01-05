@@ -5,7 +5,7 @@ cd /d "%~dp0"
 echo Scatterplot Printer (Word) setup
 echo Running PowerShell installer...
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup_windows.ps1" %*
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0setup_windows.ps1" --build-exe %*
 set EXITCODE=%ERRORLEVEL%
 
 if not "%EXITCODE%"=="0" (
@@ -19,5 +19,5 @@ if not "%EXITCODE%"=="0" (
 )
 
 echo.
-echo Setup complete.
+echo Setup complete. EXE is in dist\scatterplot_printer.exe
 pause
