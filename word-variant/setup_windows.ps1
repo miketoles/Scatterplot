@@ -49,6 +49,18 @@ function Build-Exe {
     Write-Info "EXE built at .\\dist\\scatterplot_printer.exe"
 }
 
+function Prepare-ShareFolder {
+    $shareDir = Join-Path $scriptDir "share"
+    if (-not (Test-Path $shareDir)) {
+        New-Item -ItemType Directory -Path $shareDir | Out-Null
+    }
+    Copy-Item ".\\dist\\scatterplot_printer.exe" $shareDir -Force
+    if (Test-Path ".\\config.json") { Copy-Item ".\\config.json" $shareDir -Force }
+    if (Test-Path ".\\file-list.json") { Copy-Item ".\\file-list.json" $shareDir -Force }
+    if (Test-Path ".\\run_exe.bat") { Copy-Item ".\\run_exe.bat" $shareDir -Force }
+    Write-Info "Share-ready files copied to .\\share"
+}
+
 try {
     Assert-Python
     Ensure-Venv
@@ -57,6 +69,9 @@ try {
     if ($args -contains "--build-exe") {
         Install-PyInstaller
         Build-Exe
+        Prepare-ShareFolder
+        Write-Info "Launching EXE..."
+        & ".\\dist\\scatterplot_printer.exe"
     } else {
         Write-Info "Setup complete."
         Write-Info "Run: python word_printer.py"

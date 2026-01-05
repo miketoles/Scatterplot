@@ -19,6 +19,8 @@ One-click option (recommended for non-technical users):
 setup_windows_one_click.bat
 ```
 
+This will install dependencies, build the EXE, copy a share-ready bundle to `share\`, and launch the app.
+
 To build the EXE in the same step:
 
 ```powershell
