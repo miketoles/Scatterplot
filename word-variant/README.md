@@ -5,7 +5,21 @@ This README explains how to run and distribute the `word_printer.py` prototype a
 Where files belong
 - Place `config.json` and `file-list.json` either next to the EXE/script or in `%APPDATA%\ScatterplotPrinter`.
 
-Quick run (no build)
+Quick start (one script)
+
+Run this once on Windows PowerShell to set up dependencies:
+
+```powershell
+.\setup_windows.ps1
+```
+
+To build the EXE in the same step:
+
+```powershell
+.\setup_windows.ps1 --build-exe
+```
+
+Quick run (no build, manual)
 
 1. Transfer the `word-variant` folder to the Windows machine.
 2. Install Python (per-user) or use the Microsoft Store version.
