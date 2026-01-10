@@ -1,75 +1,84 @@
-# Scatterplot Printer — Word variant (Windows setup & usage)
+# Scatterplot Printer (Word)
 
-This README explains how to run and distribute the `word_printer.py` prototype and how to build a one-file EXE (`scatterplot_printer.exe`) for Windows users who do not have admin rights.
+Automatically updates dates in Word document headers and prints them to a configured printer.
 
-Where files belong
-- Place `config.json` and `file-list.json` either next to the EXE/script or in `%APPDATA%\ScatterplotPrinter`.
+## Installation (One-Click)
 
-Quick start (one script)
+**Double-click `INSTALL.bat`** - that's it!
 
-Run this once on Windows PowerShell to set up dependencies:
+The installer will:
+1. Check for Python (install it if missing via Windows Package Manager)
+2. Set up dependencies automatically
+3. Build the application
+4. Create a desktop shortcut
+5. Launch the app
 
+After installation, use the **"Scatterplot Printer"** shortcut on your desktop.
+
+## Requirements
+
+- Windows 10 or 11
+- Microsoft Word installed
+- Internet connection (for first-time setup only)
+
+## Configuration
+
+Edit these files in the `dist` folder (next to the EXE):
+
+**config.json** - Printer and behavior settings:
+```json
+{
+  "printer_name": "Your Printer Name",
+  "duplex": true,
+  "test_mode": true,
+  "save_after_print": true
+}
+```
+
+**file-list.json** - List of Word documents to process:
+```json
+{
+  "files": [
+    "C:\\Path\\To\\Document1.docx",
+    "C:\\Path\\To\\Document2.docx"
+  ]
+}
+```
+
+## Test Mode
+
+**Important:** Keep `test_mode: true` in config.json until you've verified everything works correctly. In test mode:
+- Documents open and dates are updated
+- Documents are NOT printed
+- Changes are NOT saved
+
+Once verified, set `test_mode: false` for production use.
+
+## Troubleshooting
+
+### "Python not found"
+If the automatic Python install fails:
+1. Go to https://www.python.org/downloads/
+2. Download Python 3.11+
+3. Run installer - **CHECK "Add Python to PATH"**
+4. Re-run `INSTALL.bat`
+
+### Printer name not working
+Run this in PowerShell to see exact printer names:
 ```powershell
-.\setup_windows.ps1
+Get-Printer | Select-Object Name
 ```
+Copy the exact name into `config.json`.
 
-One-click option (recommended for non-technical users):
+### Logs
+Check `dist\logs\word_printer.log` for detailed error messages.
 
-```bat
-setup_windows_one_click.bat
-```
+## Files Overview
 
-This will install dependencies, build the EXE, copy a share-ready bundle to `share\`, and launch the app.
-
-To build the EXE in the same step:
-
-```powershell
-.\setup_windows.ps1 --build-exe
-```
-
-Quick run (no build, manual)
-
-1. Transfer the `word-variant` folder to the Windows machine.
-2. Install Python (per-user) or use the Microsoft Store version.
-3. (Optional but recommended) Create a venv and install `pywin32`:
-
-```powershell
-python -m venv venv
-venv\Scripts\Activate.ps1
-pip install pywin32
-python word_printer.py
-```
-
-Build the EXE (single-file)
-
-See `BUILD.md` for the full step-by-step. In short:
-
-```powershell
-pip install pyinstaller
-pyinstaller --onefile --noconsole --name scatterplot_printer --add-data "config.json;." --add-data "file-list.json;." word_printer.py
-.\dist\scatterplot_printer.exe
-```
-
-Safety: test mode
-
-- Before printing to real printers, enable `test_mode` in `config.json` (true). The script will then open and modify documents but not send them to the printer; this lets you validate replacements and save behavior.
-
-Where to put files for a user
-
-- Preferred: send a ZIP containing `scatterplot_printer.exe`, `config.json`, `file-list.json`, and `run_exe.bat`. The user extracts and double-clicks `run_exe.bat`.
-- Alternative: put `config.json` into `%APPDATA%\ScatterplotPrinter` — the EXE will discover it there.
-
-Troubleshooting
-
-- If the script fails to set the printer by name, run `printui /s /t2` or use Settings → Printers to confirm the exact device name; place that string into `config.json` under `printer_name`.
-- If duplex isn't enforced, test on the same Windows machine with a simple Word print job and confirm the printer driver exposes duplex settings. If driver-level setting fails, the script will fall back to Word-level options; if both fail, perform a manual two-pass duplex.
-
-Support and next steps
-
-Logs
-
-- Runtime output (stdout/stderr) is captured to `logs/word_printer.log` next to the script when the script runs. If you run the EXE, the same `logs` folder next to the EXE will be used.
-- If you need diagnostics, open that file in a text editor after running a test to inspect errors and progress messages.
-
-
-- To help a non-technical recipient, I can produce a small GUI to edit `config.json` and `file-list.json`, then bundle it with PyInstaller. Ask me to add it and I'll implement and include build steps.
+| File | Purpose |
+|------|---------|
+| `INSTALL.bat` | One-click installer - run this first |
+| `dist\scatterplot_printer.exe` | The app (created after install) |
+| `dist\config.json` | Printer/behavior settings |
+| `dist\file-list.json` | Documents to process |
+| `word_printer.py` | Source code (not needed after install) |
