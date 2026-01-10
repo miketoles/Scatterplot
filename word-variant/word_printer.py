@@ -269,19 +269,32 @@ def process_files(file_paths, config):
     word = win32com.client.Dispatch('Word.Application')
     word.Visible = False
 
-    if config.get('printer_name'):
+    # Use specified printer or default printer
+    printer_name = config.get('printer_name')
+    if printer_name:
         try:
-            word.ActivePrinter = config['printer_name']
-            print(f"Set ActivePrinter to {config['printer_name']}")
+            word.ActivePrinter = printer_name
+            print(f"Set ActivePrinter to {printer_name}")
         except Exception as e:
             print(f"Warning: failed to set ActivePrinter: {e}")
+    else:
+        # Use system default printer - get it from Word
+        try:
+            printer_name = word.ActivePrinter
+            print(f"Using default printer: {printer_name}")
+        except Exception:
+            print("Using system default printer")
 
     # Try to enforce duplex at the printer driver level if requested
-    if config.get('duplex') and isinstance(config.get('duplex'), dict) and config['duplex'].get('enabled'):
+    duplex_config = config.get('duplex', {})
+    duplex_enabled = duplex_config.get('enabled', True) if isinstance(duplex_config, dict) else bool(duplex_config)
+    duplex_mode = duplex_config.get('mode', 'long-edge') if isinstance(duplex_config, dict) else 'long-edge'
+
+    if duplex_enabled and printer_name:
         try:
-            def try_set_printer_duplex(printer_name, mode):
+            def try_set_printer_duplex(pname, mode):
                 try:
-                    hPrinter = win32print.OpenPrinter(printer_name)
+                    hPrinter = win32print.OpenPrinter(pname)
                     pinfo = win32print.GetPrinter(hPrinter, 2)
                     devmode = pinfo.get('pDevMode')
                     if not devmode:
@@ -301,20 +314,20 @@ def process_files(file_paths, config):
                     win32print.ClosePrinter(hPrinter)
                     return True
                 except Exception as e:
-                    print('  Warning: failed to set printer duplex via DEVMODE:', e)
+                    print(f'  Warning: failed to set printer duplex via DEVMODE: {e}')
                     try:
                         win32print.ClosePrinter(hPrinter)
                     except Exception:
                         pass
                     return False
 
-            ok = try_set_printer_duplex(config.get('printer_name'), config['duplex'].get('mode', 'long-edge'))
+            ok = try_set_printer_duplex(printer_name, duplex_mode)
             if ok:
-                print('  Duplex preference set at driver level')
+                print(f'  Duplex set to {duplex_mode}')
             else:
-                print('  Duplex preference could not be enforced at driver level; will attempt via Word and fallback if needed')
+                print('  Duplex could not be enforced at driver level; will use Word defaults')
         except Exception as e:
-            print('  Duplex enforcement attempt failed:', e)
+            print(f'  Duplex enforcement attempt failed: {e}')
 
     for p in file_paths:
         p_expanded = os.path.expanduser(p)

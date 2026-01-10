@@ -13,9 +13,9 @@ echo ============================================================
 echo.
 
 REM Check if already installed (EXE exists)
-if exist "%~dp0dist\scatterplot_printer.exe" (
+if exist "%~dp0dist\ScatterplotPrinter.exe" (
     echo Already installed! Launching app...
-    start "" "%~dp0dist\scatterplot_printer.exe"
+    start "" "%~dp0dist\ScatterplotPrinter.exe"
     goto :end
 )
 
@@ -95,24 +95,20 @@ echo.
 
 REM Build the EXE
 echo Building application...
-pyinstaller --onefile --noconsole --name scatterplot_printer word_printer.py --distpath "%~dp0dist" --workpath "%~dp0build" --specpath "%~dp0build" >nul 2>&1
+pyinstaller --onefile --windowed --name ScatterplotPrinter --icon=NONE scatterplot_app.py word_printer.py --distpath "%~dp0dist" --workpath "%~dp0build" --specpath "%~dp0build" --hidden-import=win32com.client --hidden-import=pythoncom --hidden-import=win32print --hidden-import=win32con >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (
     echo Build failed. Trying verbose mode...
-    pyinstaller --onefile --noconsole --name scatterplot_printer word_printer.py --distpath "%~dp0dist" --workpath "%~dp0build" --specpath "%~dp0build"
+    pyinstaller --onefile --windowed --name ScatterplotPrinter scatterplot_app.py word_printer.py --distpath "%~dp0dist" --workpath "%~dp0build" --specpath "%~dp0build" --hidden-import=win32com.client --hidden-import=pythoncom --hidden-import=win32print --hidden-import=win32con
     pause
     exit /b 1
 )
-
-REM Copy config files next to EXE
-if exist "%~dp0config.json" copy /Y "%~dp0config.json" "%~dp0dist\" >nul
-if exist "%~dp0file-list.json" copy /Y "%~dp0file-list.json" "%~dp0dist\" >nul
 
 echo.
 echo ============================================================
 echo   INSTALLATION COMPLETE!
 echo ============================================================
 echo.
-echo The app is ready at: %~dp0dist\scatterplot_printer.exe
+echo The app is ready at: %~dp0dist\ScatterplotPrinter.exe
 echo.
 
 REM Create desktop shortcut
@@ -121,7 +117,7 @@ set SCRIPT="%TEMP%\create_shortcut.vbs"
 echo Set oWS = WScript.CreateObject("WScript.Shell") > %SCRIPT%
 echo sLinkFile = oWS.SpecialFolders("Desktop") ^& "\Scatterplot Printer.lnk" >> %SCRIPT%
 echo Set oLink = oWS.CreateShortcut(sLinkFile) >> %SCRIPT%
-echo oLink.TargetPath = "%~dp0dist\scatterplot_printer.exe" >> %SCRIPT%
+echo oLink.TargetPath = "%~dp0dist\ScatterplotPrinter.exe" >> %SCRIPT%
 echo oLink.WorkingDirectory = "%~dp0dist" >> %SCRIPT%
 echo oLink.Save >> %SCRIPT%
 cscript /nologo %SCRIPT%
@@ -132,7 +128,7 @@ echo.
 
 REM Launch the app
 echo Launching Scatterplot Printer...
-start "" "%~dp0dist\scatterplot_printer.exe"
+start "" "%~dp0dist\ScatterplotPrinter.exe"
 
 :end
 echo.
