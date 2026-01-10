@@ -18,8 +18,9 @@ A Windows desktop application that automates the process of updating dates in Wo
 1. Open Scatterplot Printer app
 2. Add documents to list (one-time setup, list is saved)
 3. Select date to print
-4. Click "Print All Documents"
-5. All documents processed automatically
+4. Select printer (or use default)
+5. Click "Print All Documents"
+6. All documents processed automatically
 
 ## Architecture
 
@@ -28,9 +29,13 @@ A Windows desktop application that automates the process of updating dates in Wo
 │                    scatterplot_app.py                       │
 │                     (GUI - tkinter)                         │
 │  ┌─────────────┐  ┌─────────────┐  ┌──────────────────┐   │
-│  │  File List  │  │ Date Picker │  │  Print Button    │   │
-│  │  (sorted)   │  │ (Mon/Day/Yr)│  │                  │   │
+│  │  File List  │  │   Printer   │  │  Print Button    │   │
+│  │  (sorted)   │  │  Selector   │  │                  │   │
 │  └─────────────┘  └─────────────┘  └──────────────────┘   │
+│  ┌─────────────┐  ┌─────────────┐                         │
+│  │ Date Picker │  │  Test Mode  │                         │
+│  │ (Mon/Day/Yr)│  │  Checkbox   │                         │
+│  └─────────────┘  └─────────────┘                         │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
@@ -43,14 +48,14 @@ A Windows desktop application that automates the process of updating dates in Wo
 │  2. Find "Date:" in header/footer/body                      │
 │  3. Replace date with selected date                         │
 │  4. Print (duplex, long-edge)                              │
-│  5. Save and close                                          │
+│  5. Save (if Test Mode OFF) and close                      │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              %APPDATA%\ScatterplotPrinter\                  │
 │                                                             │
-│  config.json     - Settings (test_mode, duplex)            │
+│  config.json     - Settings (test_mode, printer, duplex)   │
 │  file-list.json  - Saved document list                     │
 │  logs/           - Runtime logs                             │
 └─────────────────────────────────────────────────────────────┘
@@ -60,7 +65,8 @@ A Windows desktop application that automates the process of updating dates in Wo
 
 ### 1. Simple GUI
 - Dark theme matching modern Windows apps
-- File list with add/remove buttons
+- File list with add/remove buttons (sorted by filename)
+- Printer dropdown (Default + all available printers)
 - Date picker (Month, Day, Year dropdowns)
 - Test mode toggle
 - Single "Print All" button
@@ -71,7 +77,12 @@ A Windows desktop application that automates the process of updating dates in Wo
 - Sorted alphabetically by filename
 - Survives app restarts
 
-### 3. Date Replacement
+### 3. Printer Selection
+- Dropdown lists "Default Printer" + all available printers
+- Selection is saved between sessions
+- Uses Windows print spooler API to enumerate printers
+
+### 4. Date Replacement
 - Finds "Date:" patterns in headers, footers, and body
 - Supports formats:
   - `Date: January 5, 2026`
@@ -79,17 +90,37 @@ A Windows desktop application that automates the process of updating dates in Wo
   - `Date: __January 5, 2026__` (underscored)
 - Preserves document formatting
 
-### 4. Print Settings
-- Uses system default printer (no configuration needed)
+### 5. Print Settings
 - Duplex: both sides, flip on long edge (DEVMODE.Duplex = 2)
 - Synchronous printing (waits for each doc)
 
-### 5. Test Mode
-- When enabled:
-  - Opens documents and updates dates
-  - Does NOT send to printer
-  - Does NOT save changes
-- Essential for verification before production use
+### 6. Test Mode
+- **Checked (ON):** Print but DON'T save changes to documents
+- **Unchecked (OFF):** Print AND save changes to documents
+- Defaults to ON for safety on first install
+- User's choice persists between sessions
+- Clear confirmation dialog shows what will happen
+
+## Confirmation Dialog
+
+Before printing, user sees:
+```
+Ready to process 5 document(s).
+
+Date: January 10, 2026
+Printer: Default Printer
+
+TEST MODE:
+  • Documents WILL print
+  • Changes will NOT be saved
+```
+
+Or in production mode:
+```
+PRODUCTION MODE:
+  • Documents WILL print
+  • Changes WILL be saved
+```
 
 ## Date Pattern Matching
 
@@ -126,22 +157,30 @@ Examples matched:
 
 ```
 word-variant/
-├── INSTALL.bat          # One-click installer
+├── INSTALL.bat          # One-click installer - DOUBLE-CLICK THIS
 ├── README.md            # User documentation
 ├── DESIGN.md            # This file
 ├── scatterplot_app.py   # Main GUI application
 ├── word_printer.py      # Word automation engine
-├── config.json          # Default config (copied to APPDATA)
+├── config.json          # Default config
 ├── file-list.json       # Default empty list
 ├── requirements.txt     # Python dependencies
-└── dist/                # Built EXE (after install)
+└── dist/                # Built EXE (created after install)
     └── ScatterplotPrinter.exe
 ```
+
+## Distribution
+
+To distribute to a new machine:
+1. Copy the entire `word-variant` folder to the target machine
+2. Double-click `INSTALL.bat`
+3. Wait for installation to complete
+4. Use the desktop shortcut "Scatterplot Printer"
 
 ## Future Enhancements (Not in V1)
 
 - [ ] Progress bar during processing
 - [ ] Per-document status indicators
-- [ ] Printer selection dropdown
 - [ ] Schedule/timer for automatic runs
 - [ ] Network folder watching for new documents
+- [ ] Remove Test Mode once confidence is established

@@ -39,8 +39,26 @@ FILELIST_PATH = os.path.join(APP_DATA_DIR, 'file-list.json')
 DEFAULT_CONFIG = {
     "test_mode": True,
     "duplex_mode": "long-edge",  # "long-edge", "short-edge", or "none"
+    "printer": "",  # Empty string means default printer
     "last_date": None,
 }
+
+
+def get_available_printers():
+    """Get list of available printers. Returns list of printer names."""
+    printers = []
+    try:
+        import platform
+        if platform.system() == 'Windows':
+            import win32print
+            for printer in win32print.EnumPrinters(win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS):
+                printers.append(printer[2])  # printer[2] is the name
+        else:
+            # On Mac/Linux, just return empty - will show placeholder
+            pass
+    except Exception:
+        pass
+    return printers
 
 
 def load_json(path, default):
@@ -87,9 +105,47 @@ class ScatterplotPrinterApp(tk.Tk):
         self.refresh_file_list()
 
     def create_widgets(self):
-        # Style configuration
+        # Style configuration for ttk widgets
         style = ttk.Style()
-        style.theme_use('clam')
+        try:
+            style.theme_use('clam')
+        except Exception:
+            pass
+
+        # Configure combobox colors
+        style.configure('TCombobox',
+                        fieldbackground='#2a2a2a',
+                        background='#2a2a2a',
+                        foreground='white')
+        style.map('TCombobox',
+                  fieldbackground=[('readonly', '#2a2a2a')],
+                  selectbackground=[('readonly', '#4a90a4')],
+                  selectforeground=[('readonly', 'white')])
+
+        # Configure button styles
+        style.configure('Blue.TButton',
+                        background='#4a90a4',
+                        foreground='white',
+                        font=('Segoe UI', 10, 'bold'),
+                        padding=(12, 6))
+        style.map('Blue.TButton',
+                  background=[('active', '#3a7080')])
+
+        style.configure('Gray.TButton',
+                        background='#3a3a3a',
+                        foreground='white',
+                        font=('Segoe UI', 10),
+                        padding=(12, 6))
+        style.map('Gray.TButton',
+                  background=[('active', '#4a4a4a')])
+
+        style.configure('Green.TButton',
+                        background='#27ae60',
+                        foreground='white',
+                        font=('Segoe UI', 12, 'bold'),
+                        padding=(24, 12))
+        style.map('Green.TButton',
+                  background=[('active', '#1e8449')])
 
         # Main container
         main_frame = tk.Frame(self, bg='#1a1a1a', padx=16, pady=16)
@@ -142,24 +198,45 @@ class ScatterplotPrinterApp(tk.Tk):
         file_btns = tk.Frame(file_section, bg='#2a2a2a')
         file_btns.pack(fill='x', pady=(8, 0))
 
-        add_btn = tk.Button(file_btns, text='+ Add Files', command=self.add_files,
-                            bg='#4a90a4', fg='white', font=('Segoe UI', 10, 'bold'),
-                            padx=12, pady=6, borderwidth=0, cursor='hand2')
+        add_btn = ttk.Button(file_btns, text='+ Add Files', command=self.add_files,
+                             style='Blue.TButton')
         add_btn.pack(side='left')
 
-        remove_btn = tk.Button(file_btns, text='Remove Selected', command=self.remove_selected,
-                               bg='#3a3a3a', fg='white', font=('Segoe UI', 10),
-                               padx=12, pady=6, borderwidth=0, cursor='hand2')
+        remove_btn = ttk.Button(file_btns, text='Remove Selected', command=self.remove_selected,
+                                style='Gray.TButton')
         remove_btn.pack(side='left', padx=(8, 0))
 
-        clear_btn = tk.Button(file_btns, text='Clear All', command=self.clear_all,
-                              bg='#3a3a3a', fg='white', font=('Segoe UI', 10),
-                              padx=12, pady=6, borderwidth=0, cursor='hand2')
+        clear_btn = ttk.Button(file_btns, text='Clear All', command=self.clear_all,
+                               style='Gray.TButton')
         clear_btn.pack(side='left', padx=(8, 0))
 
         # === Settings Section ===
         settings_frame = tk.Frame(main_frame, bg='#2a2a2a', padx=12, pady=12)
         settings_frame.pack(fill='x', pady=(0, 12))
+
+        # Printer row
+        printer_row = tk.Frame(settings_frame, bg='#2a2a2a')
+        printer_row.pack(fill='x', pady=(0, 8))
+
+        tk.Label(printer_row, text='Printer:', font=('Segoe UI', 11, 'bold'),
+                 bg='#2a2a2a', fg='white').pack(side='left')
+
+        # Get available printers
+        available_printers = get_available_printers()
+        printer_options = ['Default Printer'] + available_printers
+
+        saved_printer = self.config_data.get('printer', '')
+        if saved_printer and saved_printer in available_printers:
+            default_printer = saved_printer
+        else:
+            default_printer = 'Default Printer'
+
+        self.printer_var = tk.StringVar(value=default_printer)
+        printer_menu = ttk.Combobox(printer_row, textvariable=self.printer_var,
+                                     values=printer_options, state='readonly',
+                                     width=35, font=('Segoe UI', 10))
+        printer_menu.pack(side='left', padx=(12, 0))
+        printer_menu.bind('<<ComboboxSelected>>', lambda e: self.save_config())
 
         # Date picker row
         date_row = tk.Frame(settings_frame, bg='#2a2a2a')
@@ -203,7 +280,7 @@ class ScatterplotPrinterApp(tk.Tk):
 
         # Test mode checkbox
         self.test_mode_var = tk.BooleanVar(value=self.config_data.get('test_mode', True))
-        test_cb = tk.Checkbutton(options_row, text='Test Mode (preview only, no printing)',
+        test_cb = tk.Checkbutton(options_row, text="Test Mode (print but don't save changes)",
                                   variable=self.test_mode_var, command=self.save_config,
                                   bg='#2a2a2a', fg='white', selectcolor='#3a3a3a',
                                   activebackground='#2a2a2a', activeforeground='white',
@@ -215,10 +292,9 @@ class ScatterplotPrinterApp(tk.Tk):
         action_frame.pack(fill='x')
 
         # Print button
-        self.print_btn = tk.Button(action_frame, text='▶  Print All Documents',
-                                    command=self.print_all,
-                                    bg='#27ae60', fg='white', font=('Segoe UI', 12, 'bold'),
-                                    padx=24, pady=12, borderwidth=0, cursor='hand2')
+        self.print_btn = ttk.Button(action_frame, text='Print All Documents',
+                                     command=self.print_all,
+                                     style='Green.TButton')
         self.print_btn.pack(side='left')
 
         # Status label
@@ -231,7 +307,7 @@ class ScatterplotPrinterApp(tk.Tk):
         info_frame = tk.Frame(main_frame, bg='#1a1a1a')
         info_frame.pack(fill='x', pady=(12, 0))
 
-        info_text = "• Documents print duplex (both sides, flip on long edge)\n• Uses your default printer"
+        info_text = "• Prints duplex (both sides, flip on long edge)"
         tk.Label(info_frame, text=info_text, font=('Segoe UI', 9),
                  bg='#1a1a1a', fg='#666666', justify='left').pack(anchor='w')
 
@@ -257,9 +333,16 @@ class ScatterplotPrinterApp(tk.Tk):
 
     def add_files(self):
         """Add files via file picker."""
+        # macOS needs different filetype format
+        import platform
+        if platform.system() == 'Darwin':
+            filetypes = [('Word Documents', '*.docx *.doc'), ('All Files', '*')]
+        else:
+            filetypes = [('Word Documents', '*.doc;*.docx'), ('All Files', '*.*')]
+
         files = filedialog.askopenfilenames(
             title='Select Word Documents',
-            filetypes=[('Word Documents', '*.doc;*.docx'), ('All Files', '*.*')]
+            filetypes=filetypes
         )
         if files:
             added = 0
@@ -302,6 +385,9 @@ class ScatterplotPrinterApp(tk.Tk):
     def save_config(self):
         """Save configuration."""
         self.config_data['test_mode'] = self.test_mode_var.get()
+        # Save printer (empty string for default)
+        printer = self.printer_var.get()
+        self.config_data['printer'] = '' if printer == 'Default Printer' else printer
         save_json(CONFIG_PATH, self.config_data)
 
     def get_selected_date(self):
@@ -332,34 +418,43 @@ class ScatterplotPrinterApp(tk.Tk):
         test_mode = self.test_mode_var.get()
 
         # Confirm
-        action = "preview" if test_mode else "print"
-        msg = f"This will {action} {len(self.file_list)} document(s).\n\n"
-        msg += f"Date to write: {formatted_date}\n"
+        msg = f"Ready to process {len(self.file_list)} document(s).\n\n"
+        msg += f"Date: {formatted_date}\n"
+        msg += f"Printer: {self.printer_var.get()}\n\n"
         if test_mode:
-            msg += "\n(Test mode: documents won't actually print or save)"
+            msg += "TEST MODE:\n"
+            msg += "  • Documents WILL print\n"
+            msg += "  • Changes will NOT be saved"
         else:
-            msg += "\nDocuments will be printed and saved with the new date."
+            msg += "PRODUCTION MODE:\n"
+            msg += "  • Documents WILL print\n"
+            msg += "  • Changes WILL be saved"
 
-        if not messagebox.askyesno(f'Confirm {action.title()}', msg):
+        if not messagebox.askyesno('Confirm Print', msg):
             return
 
         # Disable button during processing
-        self.print_btn.config(state='disabled', text='Processing...')
+        self.print_btn.config(state='disabled')
+        self.print_btn_original_text = 'Print All Documents'
         self.status_var.set('Processing documents...')
         self.update()
 
+        # Get selected printer
+        selected_printer = self.printer_var.get()
+        printer_name = None if selected_printer == 'Default Printer' else selected_printer
+
         # Run in thread to keep UI responsive
         thread = threading.Thread(target=self.run_print_job,
-                                   args=(formatted_date, test_mode))
+                                   args=(formatted_date, test_mode, printer_name))
         thread.start()
 
-    def run_print_job(self, formatted_date, test_mode):
+    def run_print_job(self, formatted_date, test_mode, printer_name):
         """Run the print job (in background thread)."""
         try:
             from word_printer import process_files
 
             config = {
-                'printer_name': None,  # Use default printer
+                'printer_name': printer_name,  # None = default printer
                 'duplex': {'enabled': True, 'mode': 'long-edge'},
                 'test_mode': test_mode,
                 'formatted_date': formatted_date,
@@ -375,7 +470,7 @@ class ScatterplotPrinterApp(tk.Tk):
 
     def print_complete(self, success, result):
         """Called when print job completes."""
-        self.print_btn.config(state='normal', text='▶  Print All Documents')
+        self.print_btn.config(state='normal')
 
         if success:
             self.status_var.set(f'Completed: {result} document(s) processed')

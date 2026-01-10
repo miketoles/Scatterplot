@@ -6,8 +6,8 @@ Automatically update dates and print Word documents in bulk.
 
 1. Maintains a list of Word documents you want to print regularly
 2. Updates the date in each document's header (e.g., "Date: January 10, 2026")
-3. Prints all documents to your default printer (duplex, long-edge flip)
-4. Saves the updated documents
+3. Prints all documents (duplex, long-edge flip)
+4. Optionally saves the updated documents
 
 ## Installation (One-Click)
 
@@ -31,24 +31,22 @@ After installation, use the **"Scatterplot Printer"** shortcut on your desktop.
 ## How to Use
 
 1. **Add Files**: Click "Add Files" to select Word documents
-2. **Set Date**: Choose the date you want written to documents
-3. **Test First**: Keep "Test Mode" checked to preview without printing
-4. **Print**: Click "Print All Documents" to process everything
+2. **Select Printer**: Choose from dropdown (or leave as Default Printer)
+3. **Set Date**: Choose the date you want written to documents
+4. **Test First**: Keep "Test Mode" checked to print without saving
+5. **Print**: Click "Print All Documents"
 
 The app automatically:
 - Sorts files by name
 - Saves your file list between sessions
-- Uses your default printer
-- Prints duplex (both sides, flip on long edge)
+- Remembers your printer and settings
 
 ## Test Mode
 
-**Important:** Keep "Test Mode" checked until you've verified everything works:
-- Documents open and dates are updated
-- Documents are NOT printed
-- Changes are NOT saved
+- **Checked (ON):** Documents print, but changes are NOT saved
+- **Unchecked (OFF):** Documents print AND changes ARE saved
 
-Uncheck Test Mode when ready for actual printing.
+Test Mode defaults to ON for safety. Your choice is remembered.
 
 ## Troubleshooting
 
