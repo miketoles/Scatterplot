@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Scatterplot PDF</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --page-width: 11in;
+      --page-height: 8.5in;
+      --margin: 0.5in;
+      --border: #666666;
+      --light: #f2f2f2;
+    }
+
+    @page {
+      size: 11in 8.5in landscape;
+      margin: 0;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .page {
+        page-break-after: always;
+        border: none !important;
+        margin: 0 !important;
+      }
+      .page:last-child {
+        page-break-after: avoid;
+      }
+    }
+
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      background: #fff;
+      color: #000;
+    }
+
+    .page {
+      width: var(--page-width);
+      height: var(--page-height);
+      background: #fff;
+      padding: var(--margin);
+      position: relative;
+      color: #000;
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      page-break-after: avoid;
+    }
+
+    .page-header {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr) 1.6fr;
+      gap: 8px;
+      font-size: 11px;
+      margin-bottom: 6px;
+      align-items: start;
+    }
+
+    .page-header strong {
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .header-stack {
+      display: grid;
+      gap: 4px;
+      justify-items: end;
+      width: 100%;
+    }
+
+    .header-line {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 6px;
+      width: 100%;
+      text-align: right;
+    }
+
+    .directions {
+      padding: 4px;
+      font-size: 10px;
+      margin-bottom: 4px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .behavior-list-preview {
+      font-size: 10px;
+      margin-bottom: 4px;
+    }
+
+    .underline {
+      display: inline-block;
+      border-bottom: 1px solid #222;
+      padding-bottom: 1px;
+      min-width: 80px;
+    }
+
+    .underline.wide {
+      min-width: 220px;
+    }
+
+    .header-line .underline {
+      flex: 1;
+    }
+
+    .grid-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 10px;
+    }
+
+    .cell {
+      border: 1px solid var(--border);
+      padding: 2px 4px;
+      height: 18px;
+      min-height: 18px;
+      vertical-align: top;
+    }
+
+    .time-col {
+      text-align: left;
+      font-variant-numeric: tabular-nums;
+      font-size: 9px;
+      white-space: nowrap;
+      overflow: hidden;
+      min-width: 90px;
+      background: var(--light);
+    }
+
+    .check-col {
+      text-align: center;
+      background: #fff;
+    }
+
+    .beh-header {
+      text-align: center;
+      font-weight: bold;
+      background: #f6f6f6;
+    }
+
+    .beh-data {
+      min-height: 16px;
+      background: #fff;
+    }
+
+    .desc-cell {
+      background: var(--light);
+      padding: 4px;
+    }
+
+    .desc-header {
+      background: var(--light);
+    }
+
+    .desc-text {
+      font-size: 9px;
+      line-height: 1.2;
+      padding: 4px;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .desc-text strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .footer-note {
+      position: absolute;
+      bottom: var(--margin);
+      left: var(--margin);
+      right: var(--margin);
+      text-align: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .notes-grid {
+      border: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 20% 20% 60%;
+      font-size: 11px;
+      flex: 0 0 auto;
+    }
+
+    .notes-page {
+      display: flex;
+      flex-direction: column;
+      height: calc(var(--page-height) - (var(--margin) * 2) - 60px);
+      gap: 6px;
+    }
+
+    .notes-row {
+      display: contents;
+    }
+
+    .notes-cell {
+      border: 1px solid var(--border);
+      padding: 8px;
+      min-height: 140px;
+    }
+
+    .notes-header-cell {
+      min-height: 28px;
+      background: var(--light);
+      font-weight: bold;
+    }
+
+    .instructions {
+      border: 1px solid var(--border);
+      padding: 8px;
+      font-size: 10px;
+      flex: 1 0 auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .instructions strong {
+      display: block;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .instruction-text {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .instruction-image {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .instruction-image img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+  <div id="content"></div>
+
+  <script>
+    // Data will be injected by main.js via executeJavaScript
+
+    function timeRows(startHour) {
+      const rows = [];
+      let hour = startHour;
+      let minute = 0;
+      for (let i = 0; i < 32; i++) {
+        const startHourVal = hour;
+        const startMin = minute;
+        const endTotal = startMin + 14;
+        const endHour = (startHourVal + Math.floor(endTotal / 60)) % 24;
+        const endMin = endTotal % 60;
+        const start = formatTime(startHourVal, startMin);
+        const end = formatTime(endHour, endMin);
+        rows.push(`${start} - ${end}`);
+        minute += 15;
+        if (minute >= 60) {
+          minute = 0;
+          hour = (hour + 1) % 24;
+        }
+      }
+      return rows;
+    }
+
+    function formatTime(hour24, minute) {
+      const period = hour24 >= 12 ? "PM" : "AM";
+      let hour12 = hour24 % 12;
+      if (hour12 === 0) hour12 = 12;
+      return `${hour12}:${String(minute).padStart(2, "0")} ${period}`;
+    }
+
+    function formatDateForDisplay(dateStr) {
+      if (!dateStr) {
+        const now = new Date();
+        return now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      }
+      const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (match) {
+        const [_, year, month, day] = match;
+        const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      }
+      return dateStr;
+    }
+
+    function renderAllPatients(patientsData) {
+      const contentEl = document.getElementById('content');
+      let html = '';
+
+      for (const data of patientsData) {
+        html += renderPatient(data);
+      }
+
+      contentEl.innerHTML = html;
+
+      // Signal that rendering is complete
+      window.renderComplete = true;
+    }
+
+    function renderPatient(data) {
+      const patient = {
+        displayId: data.patient || '',
+        doctor: data.doctor || '',
+        bcba: data.bcba || '',
+        behaviors: data.behaviors || []
+      };
+      const date = data.date;
+
+      // Only include behaviors that have a title
+      const behaviors = patient.behaviors.filter(b => b.title && b.title.trim()).slice(0, 4);
+      if (behaviors.length === 0) {
+        behaviors.push({ title: 'Behavior 1', description: '' });
+      }
+
+      const dateDisplay = formatDateForDisplay(date);
+      const behaviorListText = behaviors.map((b, i) => `${i + 1}.) ${b.title}`).join(' ');
+
+      return renderPageGrid(patient, dateDisplay, behaviorListText, behaviors, 'Please look at last page for instructions.', 7) +
+             renderPageGrid(patient, dateDisplay, behaviorListText, behaviors, 'Please look at last page for instructions.', 15) +
+             renderPageGrid(patient, dateDisplay, behaviorListText, behaviors, 'Please look at last page for instructions.', 23) +
+             renderNotesPage(patient, dateDisplay, behaviorListText, behaviors);
+    }
+
+    function renderPageGrid(patient, dateDisplay, behaviorListText, behaviors, pageLabel, startHour) {
+      const behaviorCount = behaviors.length;
+      const behaviorPairWidth = (84 / behaviorCount);
+      const behaviorHalfWidth = (behaviorPairWidth / 2).toFixed(2);
+      const rows = timeRows(startHour);
+
+      return `
+        <div class="page">
+          <div class="page-header">
+            <div><strong>Date:</strong> <span class="underline">${dateDisplay}</span></div>
+            <div><strong>Doctor:</strong> <span class="underline">${patient.doctor}</span></div>
+            <div><strong>Patient:</strong> <span class="underline">${patient.displayId}</span></div>
+            <div><strong>BCBA:</strong> ${patient.bcba}</div>
+            <div class="header-stack">
+              <div class="header-line"><strong>Observer:</strong><span class="underline wide"></span></div>
+              <div class="header-line"><span>Shift: Day Evening Night</span></div>
+            </div>
+          </div>
+          <div class="behavior-list-preview"><strong>Behaviors for data collection:</strong> ${behaviorListText}</div>
+          <div class="directions">Directions: Please shade in the box, if one or all behavior occurs in 15-minute increments.</div>
+          <table class="grid-table">
+            <colgroup>
+              <col style="width:12%">
+              <col style="width:4%">
+              ${behaviors.map(() => `
+                <col style="width:${behaviorHalfWidth}%">
+                <col style="width:${behaviorHalfWidth}%">
+              `).join('')}
+            </colgroup>
+            <tr>
+              <th class="cell beh-header">Time</th>
+              <th class="cell beh-header">&#10003;</th>
+              ${behaviors.map((b, i) => `
+                <th class="cell beh-header">${i + 1}. ${b.title}</th>
+                <th class="cell desc-header"></th>
+              `).join('')}
+            </tr>
+            ${rows.map((rowTime, rowIndex) => `
+              <tr>
+                <td class="cell time-col">${rowTime}</td>
+                <td class="cell check-col"></td>
+                ${behaviors.map((b, i) => `
+                  <td class="cell beh-data"></td>
+                  ${rowIndex === 0 ? `
+                    <td class="cell desc-cell" rowspan="${rows.length}">
+                      <div class="desc-text">
+                        <strong>${b.title}</strong>
+                        ${b.description || ''}
+                      </div>
+                    </td>
+                  ` : ''}
+                `).join('')}
+              </tr>
+            `).join('')}
+          </table>
+          <div class="footer-note">${pageLabel}</div>
+        </div>
+      `;
+    }
+
+    function renderNotesPage(patient, dateDisplay, behaviorListText, behaviors) {
+      return `
+        <div class="page">
+          <div class="page-header">
+            <div><strong>Date:</strong> <span class="underline">${dateDisplay}</span></div>
+            <div><strong>Doctor:</strong> <span class="underline">${patient.doctor}</span></div>
+            <div><strong>Patient:</strong> <span class="underline">${patient.displayId}</span></div>
+            <div><strong>BCBA:</strong> ${patient.bcba}</div>
+            <div class="header-stack">
+              <div class="header-line"><strong>Observer:</strong><span class="underline wide"></span></div>
+              <div class="header-line"><span>Shift: Day Evening Night</span></div>
+            </div>
+          </div>
+          <div class="behavior-list-preview"><strong>Behaviors for data collection:</strong> ${behaviorListText}</div>
+          <div class="directions">Directions: Please shade in the box, if one or all behavior occurs in 15-minute increments.</div>
+          <div class="notes-page">
+            <div class="notes-grid">
+              <div class="notes-row">
+                <div class="notes-cell notes-header-cell">Shift</div>
+                <div class="notes-cell notes-header-cell">Observer (First/Last)</div>
+                <div class="notes-cell notes-header-cell">Notes</div>
+              </div>
+              <div class="notes-row">
+                <div class="notes-cell"><strong>Day</strong></div>
+                <div class="notes-cell"></div>
+                <div class="notes-cell"></div>
+              </div>
+              <div class="notes-row">
+                <div class="notes-cell"><strong>Evening</strong></div>
+                <div class="notes-cell"></div>
+                <div class="notes-cell"></div>
+              </div>
+              <div class="notes-row">
+                <div class="notes-cell"><strong>Night</strong></div>
+                <div class="notes-cell"></div>
+                <div class="notes-cell"></div>
+              </div>
+            </div>
+            <div class="instructions">
+              <strong>DATA MUST BE COLLECTED HOURLY</strong>
+              <div class="instruction-text">
+                Data taken later is often incorrect. Please take data as soon as you are able.
+                If you are unable to collect data within the hour, please "X" out the time slots
+                (as if you were not with the patient).
+              </div>
+              <div class="instruction-image">
+                <img src="scatterplot_bottom.png" alt="Scatterplot instructions example">
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

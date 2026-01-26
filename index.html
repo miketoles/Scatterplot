@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NRT Scatterplot Creator</title>
+  <style>
+    :root {
+      --page-width: 11in;
+      --page-height: 8.5in;
+      --margin: 0.5in;
+      --border: #444;
+      --light: #f2f2f2;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --danger: #dc2626;
+      --danger-dark: #b91c1c;
+      --bg: #1e293b;
+      --bg-light: #334155;
+      --card-bg: #0f172a;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Header Bar */
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--bg-light);
+    }
+
+    .header-bar h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: var(--bg-light);
+      color: var(--text);
+      border: 1px solid #475569;
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: var(--danger-dark);
+    }
+
+    .btn-small {
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    .btn-icon {
+      padding: 6px;
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+    }
+
+    .btn-icon:hover {
+      color: var(--text);
+      background: var(--bg-light);
+    }
+
+    .btn-icon.danger:hover {
+      color: var(--danger);
+    }
+
+    /* Main Content */
+    .main-content {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Clean Patient List */
+    .patient-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      background: var(--card-bg);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--bg-light);
+    }
+
+    .patient-row {
+      display: flex;
+      align-items: flex-start;
+      padding: 12px 16px;
+      background: var(--card-bg);
+      cursor: pointer;
+      transition: background 0.1s;
+      border-bottom: 1px solid var(--bg-light);
+    }
+
+    .patient-row:last-child {
+      border-bottom: none;
+    }
+
+    .patient-row:hover {
+      background: var(--bg-light);
+    }
+
+    .patient-row-name {
+      min-width: 160px;
+      flex-shrink: 0;
+    }
+
+    .patient-row-id {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .patient-row-updated {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      white-space: nowrap;
+    }
+
+    .patient-row-info {
+      flex: 1;
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 16px;
+    }
+
+    .patient-row-behaviors {
+      flex: 1;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .patient-row-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Add Patient Button */
+    .add-patient-section {
+      margin-top: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    /* Edit Patient Page */
+    .page-edit {
+      display: none;
+    }
+
+    body.state-edit .page-manage { display: none; }
+    body.state-edit .page-edit { display: block; }
+
+    .edit-form {
+      background: var(--card-bg);
+      border-radius: 8px;
+      border: 1px solid var(--bg-light);
+      overflow: hidden;
+    }
+
+    .edit-section {
+      padding: 20px;
+      border-bottom: 1px solid var(--bg-light);
+    }
+
+    .edit-section:last-child {
+      border-bottom: none;
+    }
+
+    .edit-section h3 {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .edit-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .edit-section-header h3 {
+      margin-bottom: 0;
+    }
+
+    .edit-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .edit-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .edit-row label {
+      font-size: 14px;
+      color: var(--text-muted);
+      width: 100px;
+      flex-shrink: 0;
+    }
+
+    .edit-row input,
+    .edit-row select {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #94a3b8;
+      border-radius: 4px;
+      padding: 8px 12px;
+      color: #1e293b;
+      font-size: 14px;
+    }
+
+    .edit-row input:focus,
+    .edit-row select:focus,
+    .edit-row textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    /* Behaviors in Edit */
+    .behavior-edit-item {
+      background: var(--bg);
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--bg-light);
+    }
+
+    .behavior-edit-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .behavior-edit-number {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .behavior-edit-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .behavior-edit-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .behavior-edit-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .behavior-edit-row label {
+      font-size: 13px;
+      color: var(--text-muted);
+      width: 80px;
+      flex-shrink: 0;
+      padding-top: 8px;
+    }
+
+    .behavior-edit-row input,
+    .behavior-edit-row textarea {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #94a3b8;
+      border-radius: 4px;
+      padding: 8px 12px;
+      color: #1e293b;
+      font-size: 14px;
+    }
+
+    .behavior-edit-row input:focus,
+    .behavior-edit-row textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    .behavior-edit-row textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .add-behavior-section {
+      margin-top: 12px;
+    }
+
+    .max-behaviors-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* Edit Actions */
+    .edit-actions {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--bg);
+      border-top: 1px solid var(--bg-light);
+    }
+
+    /* Dialogs / Modals */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow: hidden;
+      border: 1px solid var(--bg-light);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--bg-light);
+      border-bottom: 1px solid #475569;
+    }
+
+    .modal-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      max-height: calc(80vh - 130px);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 16px 20px;
+      background: var(--bg);
+      border-top: 1px solid var(--bg-light);
+    }
+
+    /* Print All Dialog */
+    .date-picker-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .date-picker-row label {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .date-picker-row input {
+      flex: 1;
+      background: #fff;
+      border: 1px solid #475569;
+      border-radius: 4px;
+      padding: 8px 12px;
+      color: #1e293b;
+      font-size: 14px;
+    }
+
+    .date-picker-row input::-webkit-calendar-picker-indicator {
+      filter: none;
+    }
+
+    .select-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .patient-checkbox-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .patient-checkbox-item {
+      display: grid;
+      grid-template-columns: 24px 100px 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--bg);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .patient-checkbox-item:hover {
+      background: var(--bg-light);
+    }
+
+    .patient-checkbox-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+
+    .patient-checkbox-item .patient-name {
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .patient-checkbox-item .patient-behaviors {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: left;
+    }
+
+    /* Settings Page */
+    .settings-section {
+      margin-bottom: 24px;
+    }
+
+    .settings-section h3 {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .settings-path {
+      flex: 1;
+      min-width: 200px;
+      background: var(--bg);
+      border: 1px solid #475569;
+      border-radius: 4px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-info {
+      padding: 12px 16px;
+      background: var(--bg);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .settings-input-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .settings-input-row label {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .settings-input-row input {
+      width: 80px;
+      background: var(--bg);
+      border: 1px solid #475569;
+      border-radius: 4px;
+      padding: 6px 10px;
+      color: var(--text);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    /* View Page */
+    .view-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--bg-light);
+    }
+
+    .view-header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .view-header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .view-date-picker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .view-date-picker label {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .view-date-picker input {
+      background: #fff;
+      border: 1px solid #475569;
+      border-radius: 4px;
+      padding: 6px 10px;
+      color: #1e293b;
+      font-size: 14px;
+    }
+
+    .view-date-picker input::-webkit-calendar-picker-indicator {
+      filter: none;
+    }
+
+    /* Preview Styles (preserved from original) */
+    .preview-container {
+      padding: 20px;
+      background: #e9e9e9;
+      min-height: calc(100vh - 60px);
+      overflow: auto;
+    }
+
+    .preview {
+      display: grid;
+      gap: 16px;
+    }
+
+    .page {
+      width: var(--page-width);
+      height: var(--page-height);
+      background: #fff;
+      border: 1px solid #ccc;
+      margin: 0 auto;
+      padding: var(--margin);
+      position: relative;
+      color: #000;
+    }
+
+    .page-header {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr) 1.6fr;
+      gap: 8px;
+      font-size: 11px;
+      margin-bottom: 6px;
+      align-items: start;
+    }
+
+    .page-header strong {
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .header-stack {
+      display: grid;
+      gap: 4px;
+      justify-items: end;
+      width: 100%;
+    }
+
+    .header-line {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 6px;
+      width: 100%;
+      text-align: right;
+    }
+
+    .directions {
+      padding: 4px;
+      font-size: 10px;
+      margin-bottom: 4px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .behavior-list-preview {
+      font-size: 10px;
+      margin-bottom: 4px;
+    }
+
+    .underline {
+      display: inline-block;
+      border-bottom: 1px solid #222;
+      padding-bottom: 1px;
+      min-width: 80px;
+    }
+
+    .underline.wide {
+      min-width: 220px;
+    }
+
+    .header-line .underline {
+      flex: 1;
+    }
+
+    .grid-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 10px;
+    }
+
+    .cell {
+      border: 1px solid var(--border);
+      padding: 2px 4px;
+      height: 18px;
+      min-height: 18px;
+      vertical-align: top;
+    }
+
+    .time-col {
+      text-align: left;
+      font-variant-numeric: tabular-nums;
+      font-size: 9px;
+      white-space: nowrap;
+      overflow: hidden;
+      min-width: 90px;
+      background: var(--light);
+    }
+
+    .check-col {
+      text-align: center;
+      background: #fff;
+    }
+
+    .beh-header {
+      text-align: center;
+      font-weight: bold;
+      background: #f6f6f6;
+    }
+
+    .beh-data {
+      min-height: 16px;
+      background: #fff;
+    }
+
+    .desc-cell {
+      background: var(--light);
+      padding: 4px;
+    }
+
+    .desc-header {
+      background: var(--light);
+    }
+
+    .desc-text {
+      font-size: 9px;
+      line-height: 1.2;
+      padding: 4px;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .desc-text strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .footer-note {
+      position: absolute;
+      bottom: var(--margin);
+      left: var(--margin);
+      right: var(--margin);
+      text-align: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .notes-grid {
+      border: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 20% 20% 60%;
+      font-size: 11px;
+      flex: 0 0 auto;
+    }
+
+    .notes-page {
+      display: flex;
+      flex-direction: column;
+      height: calc(var(--page-height) - (var(--margin) * 2) - 60px);
+      gap: 6px;
+    }
+
+    .notes-row {
+      display: contents;
+    }
+
+    .notes-cell {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 8px;
+      min-height: 140px;
+    }
+
+    .notes-header-cell {
+      background: var(--light);
+      font-weight: bold;
+      min-height: 36px;
+      padding: 6px 8px;
+    }
+
+    .notes-cell:last-child {
+      border-right: none;
+    }
+
+    .instructions {
+      border: 1px solid var(--border);
+      margin-top: auto;
+      padding: 8px;
+      min-height: 110px;
+      font-size: 10px;
+      text-align: center;
+      flex: 0 0 auto;
+    }
+
+    .instruction-text {
+      margin: 8px 0;
+    }
+
+    .instruction-image img {
+      max-width: 100%;
+      max-height: 80px;
+    }
+
+    /* Page states */
+    .page-manage { display: block; }
+    .page-edit { display: none; }
+    .page-view { display: none; }
+    .page-settings { display: none; }
+
+    body.state-edit .page-manage { display: none; }
+    body.state-edit .page-edit { display: block; }
+    body.state-view .page-manage { display: none; }
+    body.state-view .page-view { display: block; }
+    body.state-settings .page-manage { display: none; }
+    body.state-settings .page-settings { display: block; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .empty-state p {
+      margin-bottom: 20px;
+    }
+
+    /* Status message */
+    .status-toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--card-bg);
+      border: 1px solid var(--bg-light);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 200;
+      display: none;
+    }
+
+    .status-toast.visible {
+      display: block;
+    }
+
+    .status-toast.error {
+      border-color: var(--danger);
+      color: #fca5a5;
+    }
+  </style>
+</head>
+<body>
+  <!-- Main Management Page (Clean List) -->
+  <div class="page-manage">
+    <div class="header-bar">
+      <h1>NRT Scatterplot Creator</h1>
+      <div class="header-actions">
+        <button class="btn btn-primary" id="printAllBtn">
+          <span>🖨️</span> Print All Scatterplots
+        </button>
+        <button class="btn btn-icon" id="settingsBtn" title="Settings">⚙️</button>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="add-patient-section">
+        <button class="btn btn-primary" id="addPatientBtnTop">
+          <span>+</span> Add New Patient
+        </button>
+      </div>
+
+      <div class="patient-list" id="patientList">
+        <!-- Patient rows will be rendered here -->
+      </div>
+
+      <div class="add-patient-section">
+        <button class="btn btn-primary" id="addPatientBtn">
+          <span>+</span> Add New Patient
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Patient Page -->
+  <div class="page-edit">
+    <div class="header-bar">
+      <div class="header-title">
+        <button class="btn btn-primary" id="backFromEditBtn">← Save and Go Back</button>
+        <button class="btn btn-secondary" id="cancelChangesBtn" style="display: none;">Cancel Changes</button>
+        <h1 id="editPageTitle">Edit Patient</h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary" id="editViewBtn">👁️ View Scatterplot</button>
+        <div class="view-date-picker">
+          <label for="editExportDate">Date:</label>
+          <input type="date" id="editExportDate">
+        </div>
+        <button class="btn btn-primary" id="editExportBtn">📄 Export PDF</button>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="edit-form" id="editForm">
+        <!-- Edit form will be rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- View Scatterplot Page -->
+  <div class="page-view">
+    <div class="view-header">
+      <div class="view-header-left">
+        <button class="btn btn-secondary" id="backFromViewBtn">← Back</button>
+        <h1 id="viewPatientTitle">Patient</h1>
+        <div class="view-date-picker">
+          <label>Date:</label>
+          <input type="date" id="viewDate">
+        </div>
+      </div>
+      <div class="view-header-right">
+        <button class="btn btn-secondary" id="viewPrintBtn">🖨️ Print</button>
+        <button class="btn btn-primary" id="viewExportBtn">📄 Export PDF</button>
+      </div>
+    </div>
+    <div class="preview-container" id="previewContainer">
+      <div class="preview" id="preview"></div>
+    </div>
+  </div>
+
+  <!-- Settings Page -->
+  <div class="page-settings">
+    <div class="header-bar">
+      <h1>Settings</h1>
+      <button class="btn btn-secondary" id="backFromSettingsBtn">← Back</button>
+    </div>
+    <div class="main-content">
+      <div class="settings-section">
+        <h3>Data Location</h3>
+        <div class="settings-row">
+          <div class="settings-path" id="dataPathDisplay">/path/to/data</div>
+          <button class="btn btn-secondary" id="browseDataPathBtn">Browse...</button>
+          <button class="btn btn-secondary" id="openDataFolderBtn">Open Folder</button>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+          This is where patient data, doctor/BCBA lists are stored.
+          To add or remove doctors/BCBAs, edit the <code>doctors.json</code> and <code>bcbas.json</code>
+          files in this folder. Each file contains instructions on how to edit them.
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <h3>PDF Export Location</h3>
+        <div class="settings-row">
+          <div class="settings-path" id="pdfPathDisplay">/path/to/pdfs</div>
+          <button class="btn btn-secondary" id="browsePdfPathBtn">Browse...</button>
+          <button class="btn btn-secondary" id="openPdfFolderBtn">Open Folder</button>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+          This is where exported PDFs are saved.
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <h3>Current User</h3>
+        <div class="user-info" id="userInfo">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print All Modal -->
+  <div class="modal-overlay" id="printAllModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Print Scatterplots</h2>
+        <button class="btn btn-icon" id="closePrintModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="date-picker-row">
+          <label>Date:</label>
+          <input type="date" id="printDate">
+        </div>
+        <div class="select-buttons">
+          <button class="btn btn-small btn-secondary" id="selectAllBtn">Select All</button>
+          <button class="btn btn-small btn-secondary" id="deselectAllBtn">Deselect All</button>
+        </div>
+        <div class="patient-checkbox-list" id="printPatientList">
+          <!-- Checkboxes will be rendered here -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelPrintBtn">Cancel</button>
+        <button class="btn btn-primary" id="confirmPrintBtn">🖨️ Print Selected</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Toast -->
+  <div class="status-toast" id="statusToast"></div>
+
+  <script>
+    // ─────────────────────────────────────────────────────────────────────────
+    // State
+    // ─────────────────────────────────────────────────────────────────────────
+    const state = {
+      patients: [],
+      doctors: [],
+      bcbas: [],
+      currentPage: 'manage', // manage, edit, view, settings
+      editingPatient: null,
+      originalPatientData: null, // For detecting unsaved changes
+      viewingPatient: null,
+      previousPage: 'manage',
+      changedPatientIds: new Set(),
+      maxBehaviors: 4
+    };
+
+    const hasApi = typeof window.api !== 'undefined';
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // DOM Elements
+    // ─────────────────────────────────────────────────────────────────────────
+    const patientListEl = document.getElementById('patientList');
+    const editFormEl = document.getElementById('editForm');
+    const previewEl = document.getElementById('preview');
+    const previewContainer = document.getElementById('previewContainer');
+    const statusToast = document.getElementById('statusToast');
+    const printAllModal = document.getElementById('printAllModal');
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Utility Functions
+    // ─────────────────────────────────────────────────────────────────────────
+    function showStatus(message, isError = false) {
+      statusToast.textContent = message;
+      statusToast.classList.toggle('error', isError);
+      statusToast.classList.add('visible');
+      setTimeout(() => statusToast.classList.remove('visible'), 3000);
+    }
+
+    function formatDateForDisplay(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr + 'T00:00:00');
+      return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+
+    function getTomorrowDateStr() {
+      const now = new Date();
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const year = tomorrow.getFullYear();
+      const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const day = String(tomorrow.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function generateId(displayId) {
+      return displayId.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now();
+    }
+
+    function validatePatientId(displayId, excludeId = null) {
+      const pattern = /^\d{3}\s+[A-Za-z]{2,4}$/;
+      const normalized = displayId.trim().replace(/\s+/g, ' ');
+      if (!pattern.test(normalized)) {
+        return { valid: false, error: 'Format must be: 3 digits, space, 2-4 letters (e.g., "301 JS")' };
+      }
+      // Check for duplicates by displayId, not internal id
+      const existing = state.patients.find(p =>
+        p.displayId.toLowerCase() === normalized.toLowerCase() && p.id !== excludeId
+      );
+      if (existing) {
+        return { valid: false, error: 'A patient with this ID already exists' };
+      }
+      return { valid: true, normalized };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Data Functions
+    // ─────────────────────────────────────────────────────────────────────────
+    async function loadData() {
+      if (!hasApi) return;
+
+      try {
+        const [patientsData, doctors, bcbas, config] = await Promise.all([
+          window.api.loadPatients(),
+          window.api.loadDoctors(),
+          window.api.loadBcbas(),
+          window.api.loadConfig()
+        ]);
+
+        state.patients = patientsData.patients || [];
+        state.doctors = doctors || [];
+        state.bcbas = bcbas || [];
+        state.maxBehaviors = config.maxBehaviors || 4;
+        state.changedPatientIds.clear();
+
+        renderPatientList();
+      } catch (err) {
+        showStatus('Failed to load data: ' + err.message, true);
+      }
+    }
+
+    async function saveData() {
+      if (!hasApi) return;
+
+      try {
+        const result = await window.api.savePatients({
+          patients: state.patients,
+          changedIds: Array.from(state.changedPatientIds)
+        });
+
+        if (result.conflict) {
+          showStatus(`Conflict: ${result.modifiedBy} made changes. Reloading...`, true);
+          await loadData();
+          return false;
+        }
+
+        state.changedPatientIds.clear();
+        return true;
+      } catch (err) {
+        showStatus('Failed to save: ' + err.message, true);
+        return false;
+      }
+    }
+
+    function markChanged(patientId) {
+      state.changedPatientIds.add(patientId);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Patient Management
+    // ─────────────────────────────────────────────────────────────────────────
+    function addPatient() {
+      const newPatient = {
+        id: 'new-' + Date.now(),
+        displayId: '',
+        doctor: state.doctors[0] || '',
+        bcba: state.bcbas[0] || '',
+        behaviors: [{ title: '', description: '' }],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      state.patients.push(newPatient);
+      openEditPage(newPatient.id);
+    }
+
+    async function deletePatient(patientId, e) {
+      if (e) e.stopPropagation();
+      if (!hasApi) return;
+
+      const patient = state.patients.find(p => p.id === patientId);
+      const confirmed = await window.api.showConfirmDialog({
+        title: 'Delete Scatterplot',
+        message: `Delete "${patient?.displayId || 'this patient'}"?`,
+        detail: 'This will permanently delete the scatterplot and all its behaviors.'
+      });
+
+      if (confirmed) {
+        state.patients = state.patients.filter(p => p.id !== patientId);
+        markChanged(patientId);
+        await saveData();
+
+        if (state.currentPage === 'edit' && state.editingPatient?.id === patientId) {
+          showPage('manage');
+        }
+        renderPatientList();
+        showStatus('Scatterplot deleted');
+      }
+    }
+
+    function addBehavior(patientId) {
+      const patient = state.patients.find(p => p.id === patientId);
+      if (!patient) return;
+      if (patient.behaviors.length >= state.maxBehaviors) {
+        showStatus(`Maximum of ${state.maxBehaviors} behaviors allowed`, true);
+        return;
+      }
+
+      patient.behaviors.push({ title: '', description: '' });
+      patient.updatedAt = new Date().toISOString();
+      markChanged(patientId);
+      renderEditForm();
+    }
+
+    async function deleteBehavior(patientId, behaviorIndex) {
+      if (!hasApi) return;
+
+      const patient = state.patients.find(p => p.id === patientId);
+      if (!patient) return;
+
+      // If this is the last behavior, don't allow deletion
+      if (patient.behaviors.length <= 1) {
+        showStatus('Cannot delete the last behavior. Each patient must have at least one behavior.', true);
+        return;
+      }
+
+      const behavior = patient.behaviors[behaviorIndex];
+      const confirmed = await window.api.showConfirmDialog({
+        title: 'Delete Behavior',
+        message: 'Are you sure you want to delete this behavior and its description?',
+        detail: behavior.title ? `Behavior: ${behavior.title}` : 'This behavior has no title.'
+      });
+
+      if (confirmed) {
+        patient.behaviors.splice(behaviorIndex, 1);
+        patient.updatedAt = new Date().toISOString();
+        markChanged(patientId);
+        await saveData();
+        renderEditForm();
+      }
+    }
+
+    function updatePatientField(patientId, field, value) {
+      const patient = state.patients.find(p => p.id === patientId);
+      if (!patient) return false;
+
+      if (field === 'displayId') {
+        if (!value.trim()) {
+          // Allow empty during editing, will validate on save
+          patient.displayId = value;
+          markChanged(patientId);
+          return true;
+        }
+        const validation = validatePatientId(value, patientId);
+        if (!validation.valid) {
+          showStatus(validation.error, true);
+          return false;
+        }
+        patient.displayId = validation.normalized;
+      } else {
+        patient[field] = value;
+      }
+
+      patient.updatedAt = new Date().toISOString();
+      markChanged(patientId);
+      return true;
+    }
+
+    function updateBehaviorField(patientId, behaviorIndex, field, value) {
+      const patient = state.patients.find(p => p.id === patientId);
+      if (!patient || !patient.behaviors[behaviorIndex]) return;
+
+      patient.behaviors[behaviorIndex][field] = value;
+      patient.updatedAt = new Date().toISOString();
+      markChanged(patientId);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Rendering - Patient List (Clean)
+    // ─────────────────────────────────────────────────────────────────────────
+    function renderPatientList() {
+      if (state.patients.length === 0) {
+        patientListEl.innerHTML = `
+          <div class="empty-state">
+            <h2>No Scatterplots Yet</h2>
+            <p>Add a new patient to create their scatterplot.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Filter out patients without valid displayIds for clean list
+      const validPatients = state.patients.filter(p => p.displayId && p.displayId.trim());
+      const newPatients = state.patients.filter(p => !p.displayId || !p.displayId.trim());
+
+      // Sort valid patients by displayId (e.g., "301 AA" before "301 AB", "301 AB" before "302 AB")
+      validPatients.sort((a, b) => a.displayId.localeCompare(b.displayId));
+
+      patientListEl.innerHTML = [...validPatients, ...newPatients].map(patient => {
+        const behaviors = patient.behaviors
+          .filter(b => b.title)
+          .map(b => b.title)
+          .join(', ') || 'No behaviors defined';
+
+        const updatedDate = patient.updatedAt
+          ? new Date(patient.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+            ' at ' + new Date(patient.updatedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+          : '';
+
+        return `
+          <div class="patient-row" data-patient-id="${patient.id}">
+            <div class="patient-row-name">
+              <div class="patient-row-id">${patient.displayId || '(New)'}</div>
+              ${updatedDate ? `<div class="patient-row-updated">Last updated: ${updatedDate}</div>` : ''}
+            </div>
+            <div class="patient-row-info">
+              <span>Dr. ${patient.doctor || '—'}</span>
+              <span>BCBA: ${patient.bcba || '—'}</span>
+            </div>
+            <div class="patient-row-behaviors">${behaviors}</div>
+            <div class="patient-row-actions">
+              <button class="btn btn-small btn-secondary edit-btn">Edit</button>
+              <button class="btn btn-small btn-secondary view-btn">View</button>
+              <button class="btn btn-small btn-danger delete-btn">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      attachPatientListListeners();
+    }
+
+    function attachPatientListListeners() {
+      document.querySelectorAll('.patient-row').forEach(row => {
+        row.addEventListener('click', (e) => {
+          if (e.target.closest('.patient-row-actions')) return;
+          openEditPage(row.dataset.patientId);
+        });
+      });
+
+      document.querySelectorAll('.patient-row .edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const row = e.target.closest('.patient-row');
+          openEditPage(row.dataset.patientId);
+        });
+      });
+
+      document.querySelectorAll('.patient-row .view-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const row = e.target.closest('.patient-row');
+          openViewPage(row.dataset.patientId, 'manage');
+        });
+      });
+
+      document.querySelectorAll('.patient-row .delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const row = e.target.closest('.patient-row');
+          deletePatient(row.dataset.patientId, e);
+        });
+      });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Rendering - Edit Form
+    // ─────────────────────────────────────────────────────────────────────────
+    function renderEditForm() {
+      const patient = state.editingPatient;
+      if (!patient) return;
+
+      const canAddBehavior = patient.behaviors.length < state.maxBehaviors;
+
+      editFormEl.innerHTML = `
+        <div class="edit-section">
+          <h3>Patient Information</h3>
+          <div class="edit-row">
+            <label for="editDisplayId">Patient ID:</label>
+            <input type="text" id="editDisplayId" value="${patient.displayId}"
+              placeholder="Room# Initials" data-field="displayId" tabindex="1">
+          </div>
+          <div class="edit-row">
+            <label for="editDoctor">Doctor:</label>
+            <select id="editDoctor" data-field="doctor" tabindex="2">
+              ${state.doctors.map(d => `
+                <option value="${d}" ${patient.doctor === d ? 'selected' : ''}>${d}</option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="edit-row">
+            <label for="editBcba">BCBA:</label>
+            <select id="editBcba" data-field="bcba" tabindex="3">
+              ${state.bcbas.map(b => `
+                <option value="${b}" ${patient.bcba === b ? 'selected' : ''}>${b}</option>
+              `).join('')}
+            </select>
+          </div>
+        </div>
+
+        <div class="edit-section">
+          <div class="edit-section-header">
+            <h3>Behaviors</h3>
+            ${canAddBehavior ? `
+              <button class="btn btn-small btn-primary add-behavior-btn" tabindex="-1">+ Add</button>
+            ` : ''}
+          </div>
+          ${patient.behaviors.map((beh, idx) => `
+            <div class="behavior-edit-item" data-behavior-index="${idx}">
+              <div class="behavior-edit-header">
+                <span class="behavior-edit-number">Behavior ${idx + 1}</span>
+                <div class="behavior-edit-actions">
+                  <button class="btn btn-small btn-danger delete-behavior-btn" tabindex="-1">Delete</button>
+                </div>
+              </div>
+              <div class="behavior-edit-row">
+                <label>Title:</label>
+                <input type="text" value="${beh.title || ''}" data-field="title"
+                  placeholder="e.g., Aggression" tabindex="${4 + (idx * 2)}">
+              </div>
+              <div class="behavior-edit-row">
+                <label>Description:</label>
+                <textarea data-field="description"
+                  placeholder="Define the behavior..." tabindex="${5 + (idx * 2)}">${beh.description || ''}</textarea>
+              </div>
+            </div>
+          `).join('')}
+
+          <p class="max-behaviors-note" style="text-align: right; margin-top: 8px;">
+            ${patient.behaviors.length} of ${state.maxBehaviors} behaviors
+          </p>
+        </div>
+      `;
+
+      attachEditFormListeners();
+    }
+
+    function attachEditFormListeners() {
+      const patient = state.editingPatient;
+      if (!patient) return;
+
+      // Patient fields
+      document.querySelectorAll('#editForm .edit-section input, #editForm .edit-section select').forEach(el => {
+        el.addEventListener('change', (e) => {
+          updatePatientField(patient.id, e.target.dataset.field, e.target.value);
+          updateBackButton();
+        });
+        // Also update on input for immediate feedback
+        if (el.tagName === 'INPUT') {
+          el.addEventListener('input', updateBackButton);
+        }
+      });
+
+      // Behavior fields
+      document.querySelectorAll('.behavior-edit-item input, .behavior-edit-item textarea').forEach(el => {
+        el.addEventListener('change', (e) => {
+          const item = e.target.closest('.behavior-edit-item');
+          const idx = parseInt(item.dataset.behaviorIndex);
+          updateBehaviorField(patient.id, idx, e.target.dataset.field, e.target.value);
+          updateBackButton();
+        });
+        // Also update on input for immediate feedback
+        el.addEventListener('input', updateBackButton);
+      });
+
+      // Delete behavior buttons
+      document.querySelectorAll('.delete-behavior-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const item = e.target.closest('.behavior-edit-item');
+          deleteBehavior(patient.id, parseInt(item.dataset.behaviorIndex));
+          updateBackButton();
+        });
+      });
+
+      // Add behavior buttons
+      document.querySelectorAll('.add-behavior-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          addBehavior(patient.id);
+          updateBackButton();
+        });
+      });
+
+      // Focus first input
+      setTimeout(() => {
+        const firstInput = document.getElementById('editDisplayId');
+        if (firstInput && !firstInput.value) {
+          firstInput.focus();
+        }
+      }, 100);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Preview Rendering (preserved from original)
+    // ─────────────────────────────────────────────────────────────────────────
+    function timeRows(startHour) {
+      const rows = [];
+      let hour = startHour;
+      let minute = 0;
+      for (let i = 0; i < 32; i++) {
+        const startHourVal = hour;
+        const startMin = minute;
+        const endTotal = startMin + 14;
+        const endHour = (startHourVal + Math.floor(endTotal / 60)) % 24;
+        const endMin = endTotal % 60;
+        const start = formatTime(startHourVal, startMin);
+        const end = formatTime(endHour, endMin);
+        rows.push(`${start} - ${end}`);
+        minute += 15;
+        if (minute >= 60) {
+          minute = 0;
+          hour = (hour + 1) % 24;
+        }
+      }
+      return rows;
+    }
+
+    function formatTime(hour24, minute) {
+      const period = hour24 >= 12 ? "PM" : "AM";
+      let hour12 = hour24 % 12;
+      if (hour12 === 0) hour12 = 12;
+      return `${hour12}:${String(minute).padStart(2, "0")} ${period}`;
+    }
+
+    function renderPreview(patient, date) {
+      // Only include behaviors that have a title (filter out empty ones)
+      const behaviors = patient.behaviors.filter(b => b.title && b.title.trim()).slice(0, 4);
+
+      // If no valid behaviors, show at least a placeholder
+      if (behaviors.length === 0) {
+        behaviors.push({ title: 'Behavior 1', description: '' });
+      }
+
+      const dateDisplay = formatDateForDisplay(date);
+      const behaviorListText = behaviors.map((b, i) => `${i + 1}.) ${b.title}`).join(' ');
+
+      function renderPageGrid(pageLabel, startHour) {
+        const behaviorCount = behaviors.length;
+        const behaviorPairWidth = (84 / behaviorCount);
+        const behaviorHalfWidth = (behaviorPairWidth / 2).toFixed(2);
+        const rows = timeRows(startHour);
+
+        return `
+          <div class="page">
+            <div class="page-header">
+              <div><strong>Date:</strong> <span class="underline">${dateDisplay}</span></div>
+              <div><strong>Doctor:</strong> <span class="underline">${patient.doctor}</span></div>
+              <div><strong>Patient:</strong> <span class="underline">${patient.displayId}</span></div>
+              <div><strong>BCBA:</strong> ${patient.bcba}</div>
+              <div class="header-stack">
+                <div class="header-line"><strong>Observer:</strong><span class="underline wide"></span></div>
+                <div class="header-line"><span>Shift: Day Evening Night</span></div>
+              </div>
+            </div>
+            <div class="behavior-list-preview"><strong>Behaviors for data collection:</strong> ${behaviorListText}</div>
+            <div class="directions">Directions: Please shade in the box, if one or all behavior occurs in 15-minute increments.</div>
+            <table class="grid-table">
+              <colgroup>
+                <col style="width:12%">
+                <col style="width:4%">
+                ${behaviors.map(() => `
+                  <col style="width:${behaviorHalfWidth}%">
+                  <col style="width:${behaviorHalfWidth}%">
+                `).join('')}
+              </colgroup>
+              <tr>
+                <th class="cell beh-header">Time</th>
+                <th class="cell beh-header">✓</th>
+                ${behaviors.map((b, i) => `
+                  <th class="cell beh-header">${i + 1}. ${b.title}</th>
+                  <th class="cell desc-header"></th>
+                `).join('')}
+              </tr>
+              ${rows.map((rowTime, rowIndex) => `
+                <tr>
+                  <td class="cell time-col">${rowTime}</td>
+                  <td class="cell check-col"></td>
+                  ${behaviors.map((b, i) => `
+                    <td class="cell beh-data"></td>
+                    ${rowIndex === 0 ? `
+                      <td class="cell desc-cell" rowspan="${rows.length}">
+                        <div class="desc-text">
+                          <strong>${b.title}</strong>
+                          ${b.description || ''}
+                        </div>
+                      </td>
+                    ` : ''}
+                  `).join('')}
+                </tr>
+              `).join('')}
+            </table>
+            <div class="footer-note">${pageLabel}</div>
+          </div>
+        `;
+      }
+
+      function renderNotesPage() {
+        return `
+          <div class="page">
+            <div class="page-header">
+              <div><strong>Date:</strong> <span class="underline">${dateDisplay}</span></div>
+              <div><strong>Doctor:</strong> <span class="underline">${patient.doctor}</span></div>
+              <div><strong>Patient:</strong> <span class="underline">${patient.displayId}</span></div>
+              <div><strong>BCBA:</strong> ${patient.bcba}</div>
+              <div class="header-stack">
+                <div class="header-line"><strong>Observer:</strong><span class="underline wide"></span></div>
+                <div class="header-line"><span>Shift: Day Evening Night</span></div>
+              </div>
+            </div>
+            <div class="behavior-list-preview"><strong>Behaviors for data collection:</strong> ${behaviorListText}</div>
+            <div class="directions">Directions: Please shade in the box, if one or all behavior occurs in 15-minute increments.</div>
+            <div class="notes-page">
+              <div class="notes-grid">
+                <div class="notes-row">
+                  <div class="notes-cell notes-header-cell">Shift</div>
+                  <div class="notes-cell notes-header-cell">Observer (First/Last)</div>
+                  <div class="notes-cell notes-header-cell">Notes</div>
+                </div>
+                <div class="notes-row">
+                  <div class="notes-cell"><strong>Day</strong></div>
+                  <div class="notes-cell"></div>
+                  <div class="notes-cell"></div>
+                </div>
+                <div class="notes-row">
+                  <div class="notes-cell"><strong>Evening</strong></div>
+                  <div class="notes-cell"></div>
+                  <div class="notes-cell"></div>
+                </div>
+                <div class="notes-row">
+                  <div class="notes-cell"><strong>Night</strong></div>
+                  <div class="notes-cell"></div>
+                  <div class="notes-cell"></div>
+                </div>
+              </div>
+              <div class="instructions">
+                <strong>DATA MUST BE COLLECTED HOURLY</strong>
+                <div class="instruction-text">
+                  Data taken later is often incorrect. Please take data as soon as you are able.
+                  If you are unable to collect data within the hour, please "X" out the time slots
+                  (as if you were not with the patient).
+                </div>
+                <div class="instruction-image">
+                  <img src="scatterplot_bottom.png" alt="Scatterplot instructions example">
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      previewEl.innerHTML =
+        renderPageGrid('Please look at last page for instructions.', 7) +
+        renderPageGrid('Please look at last page for instructions.', 15) +
+        renderPageGrid('Please look at last page for instructions.', 23) +
+        renderNotesPage();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Page Navigation
+    // ─────────────────────────────────────────────────────────────────────────
+    function showPage(page) {
+      document.body.className = page === 'manage' ? '' : `state-${page}`;
+      state.currentPage = page;
+    }
+
+    // Check if patient has any meaningful data entered
+    function isPatientEmpty(patient) {
+      if (!patient) return true;
+      // Has displayId?
+      if (patient.displayId && patient.displayId.trim()) return false;
+      // Has any behavior with a title?
+      if (patient.behaviors.some(b => b.title && b.title.trim())) return false;
+      // Has any behavior with a description?
+      if (patient.behaviors.some(b => b.description && b.description.trim())) return false;
+      return true;
+    }
+
+    function hasUnsavedChanges() {
+      if (!state.editingPatient || !state.originalPatientData) return false;
+      return JSON.stringify(state.editingPatient) !== JSON.stringify(state.originalPatientData);
+    }
+
+    // Update back button text based on whether there are unsaved changes
+    function updateBackButton() {
+      const btn = document.getElementById('backFromEditBtn');
+      const cancelBtn = document.getElementById('cancelChangesBtn');
+
+      if (hasUnsavedChanges()) {
+        btn.textContent = '← Save and Go Back';
+        cancelBtn.style.display = '';
+      } else {
+        btn.textContent = '← Back';
+        cancelBtn.style.display = 'none';
+      }
+    }
+
+    function cancelChanges() {
+      if (!state.originalPatientData || !state.editingPatient) return;
+
+      // Revert to original data
+      const idx = state.patients.findIndex(p => p.id === state.editingPatient.id);
+      if (idx !== -1) {
+        state.patients[idx] = JSON.parse(JSON.stringify(state.originalPatientData));
+        state.editingPatient = null;
+        state.changedPatientIds.delete(state.originalPatientData.id);
+        renderPatientList();
+        showPage('manage');
+        showToast('Changes cancelled');
+      }
+    }
+
+    function openEditPage(patientId) {
+      const patient = state.patients.find(p => p.id === patientId);
+      if (!patient) return;
+
+      state.editingPatient = patient;
+      // Store deep copy of original data for cancel functionality
+      state.originalPatientData = JSON.parse(JSON.stringify(patient));
+      document.getElementById('editPageTitle').textContent =
+        patient.displayId ? `Edit: ${patient.displayId}` : 'New Patient';
+      document.getElementById('editExportDate').value = getTomorrowDateStr();
+      renderEditForm();
+      updateBackButton();
+      showPage('edit');
+    }
+
+    function openViewPage(patientId, fromPage = 'manage', date = null) {
+      const patient = state.patients.find(p => p.id === patientId);
+      if (!patient) return;
+
+      const viewDate = date || getTomorrowDateStr();
+      state.viewingPatient = patient;
+      state.previousPage = fromPage;
+      document.getElementById('viewPatientTitle').textContent = patient.displayId || 'Patient';
+      document.getElementById('viewDate').value = viewDate;
+      renderPreview(patient, viewDate);
+      showPage('view');
+
+      // Scroll to top of preview
+      setTimeout(() => {
+        previewContainer.scrollTop = 0;
+      }, 0);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Print All Modal
+    // ─────────────────────────────────────────────────────────────────────────
+    function openPrintAllModal() {
+      // Only show patients with valid displayIds
+      const validPatients = state.patients.filter(p => p.displayId && p.displayId.trim());
+
+      if (validPatients.length === 0) {
+        showStatus('No patients to print. Add patients first.', true);
+        return;
+      }
+
+      document.getElementById('printDate').value = getTomorrowDateStr();
+
+      const listEl = document.getElementById('printPatientList');
+      listEl.innerHTML = validPatients.map(p => {
+        const behaviorList = p.behaviors
+          .filter(b => b.title)
+          .map(b => b.title)
+          .join(', ') || 'No behaviors';
+        return `
+          <label class="patient-checkbox-item">
+            <input type="checkbox" value="${p.id}" checked>
+            <span class="patient-name">${p.displayId}</span>
+            <span class="patient-behaviors">${behaviorList}</span>
+          </label>
+        `;
+      }).join('');
+
+      printAllModal.classList.add('active');
+    }
+
+    function closePrintAllModal() {
+      printAllModal.classList.remove('active');
+    }
+
+    async function executePrintAll() {
+      if (!hasApi) return;
+
+      const date = document.getElementById('printDate').value;
+      const checkboxes = document.querySelectorAll('#printPatientList input[type="checkbox"]:checked');
+      const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+      const selectedPatients = state.patients.filter(p => selectedIds.includes(p.id));
+
+      if (selectedPatients.length === 0) {
+        showStatus('No patients selected', true);
+        return;
+      }
+
+      closePrintAllModal();
+      showStatus(`Generating ${selectedPatients.length} PDFs...`);
+
+      try {
+        const paths = await window.api.generatePdfsForPrint({ patients: selectedPatients, date });
+
+        for (const pdfPath of paths) {
+          await window.api.printPdf(pdfPath);
+        }
+
+        showStatus(`Opened ${paths.length} scatterplot${paths.length > 1 ? 's' : ''} for printing`);
+      } catch (err) {
+        showStatus('Print failed: ' + err.message, true);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Export PDF
+    // ─────────────────────────────────────────────────────────────────────────
+    async function exportPdf(patient, date) {
+      if (!hasApi || !patient) return;
+
+      try {
+        const result = await window.api.exportPdf({ patient, date });
+        if (result.ok) {
+          showStatus('PDF exported successfully');
+        } else if (!result.canceled) {
+          showStatus('Export failed', true);
+        }
+      } catch (err) {
+        showStatus('Export failed: ' + err.message, true);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Settings
+    // ─────────────────────────────────────────────────────────────────────────
+    async function loadSettings() {
+      if (!hasApi) return;
+
+      const [dataRoot, pdfRoot, userInfo] = await Promise.all([
+        window.api.getDataRoot(),
+        window.api.getPdfExportRoot(),
+        window.api.getUserIdentity()
+      ]);
+
+      document.getElementById('dataPathDisplay').textContent = dataRoot;
+      document.getElementById('pdfPathDisplay').textContent = pdfRoot;
+      document.getElementById('userInfo').textContent =
+        userInfo.domain ? `${userInfo.domain}\\${userInfo.username}` : userInfo.username;
+    }
+
+    async function browseDataPath() {
+      if (!hasApi) return;
+
+      const result = await window.api.chooseDataRoot();
+      if (result.changed) {
+        document.getElementById('dataPathDisplay').textContent = result.path;
+        showStatus('Data location updated. Reloading...');
+        await loadData();
+      }
+    }
+
+    async function browsePdfPath() {
+      if (!hasApi) return;
+
+      const result = await window.api.choosePdfExportRoot();
+      if (result.changed) {
+        document.getElementById('pdfPathDisplay').textContent = result.path;
+        showStatus('PDF export location updated');
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Event Listeners
+    // ─────────────────────────────────────────────────────────────────────────
+    document.getElementById('addPatientBtn').addEventListener('click', addPatient);
+    document.getElementById('addPatientBtnTop').addEventListener('click', addPatient);
+    document.getElementById('printAllBtn').addEventListener('click', openPrintAllModal);
+    document.getElementById('settingsBtn').addEventListener('click', () => {
+      loadSettings();
+      showPage('settings');
+    });
+
+    // Edit page buttons
+    document.getElementById('backFromEditBtn').addEventListener('click', async () => {
+      const patient = state.editingPatient;
+      if (patient) {
+        if (!hasUnsavedChanges()) {
+          // No changes - just go back
+          // If patient is empty (new patient with nothing entered), remove it
+          if (isPatientEmpty(patient)) {
+            state.patients = state.patients.filter(p => p.id !== patient.id);
+          }
+          state.editingPatient = null;
+          renderPatientList();
+          showPage('manage');
+          return;
+        }
+
+        // Has unsaved changes - validate and save
+        if (!patient.displayId || !patient.displayId.trim()) {
+          showStatus('Please enter a Patient ID', true);
+          document.getElementById('editDisplayId').focus();
+          return;
+        }
+        const validation = validatePatientId(patient.displayId, patient.id);
+        if (!validation.valid) {
+          showStatus(validation.error, true);
+          return;
+        }
+        await saveData();
+        showStatus('Changes saved');
+      }
+      state.editingPatient = null;
+      renderPatientList();
+      showPage('manage');
+    });
+    document.getElementById('cancelChangesBtn').addEventListener('click', cancelChanges);
+    document.getElementById('editViewBtn').addEventListener('click', () => {
+      if (state.editingPatient) {
+        const date = document.getElementById('editExportDate').value || getTomorrowDateStr();
+        openViewPage(state.editingPatient.id, 'edit', date);
+      }
+    });
+    document.getElementById('editExportBtn').addEventListener('click', async () => {
+      if (state.editingPatient) {
+        const date = document.getElementById('editExportDate').value || getTomorrowDateStr();
+        await exportPdf(state.editingPatient, date);
+      }
+    });
+
+    // View page buttons
+    document.getElementById('backFromViewBtn').addEventListener('click', () => {
+      if (state.previousPage === 'edit' && state.editingPatient) {
+        showPage('edit');
+      } else {
+        showPage('manage');
+      }
+    });
+    document.getElementById('viewDate').addEventListener('change', (e) => {
+      if (state.viewingPatient) {
+        renderPreview(state.viewingPatient, e.target.value);
+        previewContainer.scrollTop = 0;
+      }
+    });
+    document.getElementById('viewPrintBtn').addEventListener('click', async () => {
+      if (!hasApi || !state.viewingPatient) return;
+      const date = document.getElementById('viewDate').value;
+      try {
+        const paths = await window.api.generatePdfsForPrint({
+          patients: [state.viewingPatient],
+          date
+        });
+        await window.api.printPdf(paths[0]);
+        showStatus('Opened for printing');
+      } catch (err) {
+        showStatus('Print failed: ' + err.message, true);
+      }
+    });
+    document.getElementById('viewExportBtn').addEventListener('click', async () => {
+      if (!hasApi || !state.viewingPatient) return;
+      const date = document.getElementById('viewDate').value;
+      await exportPdf(state.viewingPatient, date);
+    });
+
+    // Settings page buttons
+    document.getElementById('backFromSettingsBtn').addEventListener('click', () => showPage('manage'));
+    document.getElementById('browseDataPathBtn').addEventListener('click', browseDataPath);
+    document.getElementById('openDataFolderBtn').addEventListener('click', () => hasApi && window.api.openDataFolder());
+    document.getElementById('browsePdfPathBtn').addEventListener('click', browsePdfPath);
+    document.getElementById('openPdfFolderBtn').addEventListener('click', () => hasApi && window.api.openPdfFolder());
+
+    // Print modal buttons
+    document.getElementById('closePrintModal').addEventListener('click', closePrintAllModal);
+    document.getElementById('cancelPrintBtn').addEventListener('click', closePrintAllModal);
+    document.getElementById('confirmPrintBtn').addEventListener('click', executePrintAll);
+    document.getElementById('selectAllBtn').addEventListener('click', () => {
+      document.querySelectorAll('#printPatientList input[type="checkbox"]').forEach(cb => cb.checked = true);
+    });
+    document.getElementById('deselectAllBtn').addEventListener('click', () => {
+      document.querySelectorAll('#printPatientList input[type="checkbox"]').forEach(cb => cb.checked = false);
+    });
+
+    // Close modal on overlay click
+    printAllModal.addEventListener('click', (e) => {
+      if (e.target === printAllModal) closePrintAllModal();
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Initialize
+    // ─────────────────────────────────────────────────────────────────────────
+    loadData();
+  </script>
+</body>
+</html>

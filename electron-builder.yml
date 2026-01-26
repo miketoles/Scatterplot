@@ -1,0 +1,36 @@
+appId: com.nrt.scatterplotcreator
+productName: NRT Scatterplot Creator
+copyright: Copyright © 2025
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - "**/*"
+  - "!dist/**"
+  - "!pdf output/**"
+  - "!*.md"
+  - "!*.backup.*"
+
+win:
+  target:
+    - target: nsis
+      arch: x64
+    - target: portable
+      arch: x64
+  icon: build/icon.ico
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: NRT Scatterplot Creator
+
+portable:
+  artifactName: ${productName}-Portable-${version}.zip

@@ -1,0 +1,14 @@
+{
+  "_instructions": [
+    "This file contains the list of doctors available in the dropdown.",
+    "To add a doctor: Add their name as a new line in the 'doctors' array below.",
+    "To remove a doctor: Delete their line from the array.",
+    "Make sure each name is in quotes and separated by commas (except the last one).",
+    "Example: [\"Smith\", \"Jones\", \"Williams\"]"
+  ],
+  "doctors": [
+    "Makley",
+    "Jones",
+    "Spier"
+  ]
+}

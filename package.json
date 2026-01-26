@@ -1,0 +1,26 @@
+{
+  "name": "nrt-scatterplot-creator",
+  "version": "1.0.0",
+  "description": "NRT Scatterplot Creator",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pdf": "node generate-pdf.js sample-data.json",
+    "build": "electron-builder --win",
+    "build:portable": "electron-builder --win portable",
+    "build:installer": "electron-builder --win nsis",
+    "build:all": "electron-builder --win portable nsis",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "pdfkit": "^0.17.2"
+  },
+  "devDependencies": {
+    "electron": "^40.0.0",
+    "electron-builder": "^25.1.8"
+  }
+}

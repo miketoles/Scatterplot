@@ -1,0 +1,8 @@
+{
+  "_instructions": [
+    "This file contains configuration settings for the Scatterplot Creator.",
+    "maxBehaviors: Maximum number of behaviors allowed per patient (1-10).",
+    "The scatterplot PDF layout is optimized for 4 behaviors."
+  ],
+  "maxBehaviors": 4
+}
