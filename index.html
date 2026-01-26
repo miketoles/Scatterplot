@@ -1778,7 +1778,9 @@
       const date = document.getElementById('printDate').value;
       const checkboxes = document.querySelectorAll('#printPatientList input[type="checkbox"]:checked');
       const selectedIds = Array.from(checkboxes).map(cb => cb.value);
-      const selectedPatients = state.patients.filter(p => selectedIds.includes(p.id));
+      const selectedPatients = state.patients
+        .filter(p => selectedIds.includes(p.id))
+        .sort((a, b) => a.displayId.localeCompare(b.displayId));
 
       if (selectedPatients.length === 0) {
         showStatus('No patients selected', true);
