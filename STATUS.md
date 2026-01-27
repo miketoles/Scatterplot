@@ -4,51 +4,55 @@
 
 **Project:** NRT Scatterplot Creator
 **Last worked on:** January 26, 2026
-**Time spent this session:** ~1 hour
+**GitHub:** https://github.com/miketoles/Scatterplot
 
 ---
 
 ## Current Status
 
-**Overall:** Ready for stakeholder demo
+**Overall:** In stakeholder review - gathering feedback
 
 ---
 
 ## What I Just Did
 
-- [x] Fixed Back/Save button logic (uses `hasUnsavedChanges()` instead of `isPatientEmpty()`)
-- [x] View Scatterplot button now uses date from date picker
-- [x] Added consistent spacing around both Add New Patient buttons
-- [x] Built updated deployment ZIP
+- [x] Fixed grey backgrounds not printing (printer was skipping light colors, darkened from #f2f2f2 to #e0e0e0)
+- [x] Fixed Print All PDF sorting (now sorts by patient ID alphabetically)
+- [x] Increased font sizes for better print readability:
+  - Behavior headers: 12px
+  - Description text: 12px
+  - Directions line: 11px
+  - Instructions section (page 4): 12px
+- [x] Removed "Behaviors for data collection" line from output
+- [x] Pushed to GitHub repository
 
 ---
 
 ## What's Next
 
-- [ ] Present to stakeholders **START HERE**
-- [ ] Gather feedback from BCBAs
-- [ ] Prioritize any requested changes
+- [ ] Continue gathering stakeholder feedback **START HERE**
+- [ ] Address any additional feedback
 - [ ] Deploy to additional workstations if approved
 
 ---
 
 ## Blockers / Questions
 
-- None - ready for demo
+- None - actively collecting feedback from stakeholders
 
 ---
 
 ## Notes for Next Session
 
-The app is feature-complete for v1. All 6 planned UI changes from the design doc have been implemented:
-1. Removed "Open PDFs Folder" button
-2. Date AND time in "Last updated"
-3. Add New Patient button at top
-4. Cancel Changes button
-5. Fixed Print modal alignment
-6. Grey color coding in PDF
+Recent stakeholder feedback addressed:
+- Font sizes increased for better readability on printed output
+- Grey backgrounds now print correctly (Xerox printers were skipping very light greys)
+- Print All output now properly sorted by patient ID
 
-Deployment ZIP is at: `dist/NRT-Scatterplot-Creator.zip`
+Deployment options:
+- NSIS installer: `dist/NRT Scatterplot Creator Setup 1.0.0.exe`
+- Portable ZIP: `dist/NRT Scatterplot Creator-Portable-1.0.0.zip`
+- Unpacked: `dist/win-unpacked/`
 
 ---
 
@@ -60,7 +64,7 @@ Key deployment notes:
 - App must run from local install (not network share) due to Chromium GPU process issues
 - Data files can live on network share for multi-user access
 - Default paths point to hospital L: drive
-- install.bat handles installation to %LOCALAPPDATA%
+- NSIS installer recommended for easy deployment
 
 ---
 

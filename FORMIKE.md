@@ -173,6 +173,31 @@ ScatterplotCreator/
 
 ---
 
+### Bug #5: Grey Backgrounds Not Printing
+
+**What happened:** PDF previews showed grey backgrounds correctly, but printed pages came out white. Using "Print as Image" in Adobe didn't help either.
+
+**What I tried:**
+- Checked printer settings for "skip background graphics" (couldn't find it)
+- Tried Adobe "Print as Image" option
+- Verified the grey was in the PDF file
+
+**The fix:** The grey (#f2f2f2) was too light - the Xerox Altalink B8155 printer was skipping it. Darkened to #e0e0e0 and it prints perfectly.
+
+**The lesson:** Printers have a color threshold. Very light colors (especially greys) may be skipped entirely. When designing for print, test with actual hardware and use colors with enough contrast.
+
+---
+
+### Bug #6: Print All PDFs Not Sorted
+
+**What happened:** When printing multiple patients with "Print All Scatterplots", the PDF output was in random order instead of sorted by patient ID.
+
+**The fix:** Added `.sort((a, b) => a.displayId.localeCompare(b.displayId))` to the selected patients array before generating the PDF.
+
+**The lesson:** Always consider output ordering for batch operations. Users expect sorted output.
+
+---
+
 ## Patterns & Best Practices I Learned
 
 ### Pattern: Snapshot Comparison for Change Detection
